@@ -1,0 +1,12 @@
+{% extends "template.html"%} {% block main %}
+
+<p>
+  You are going to delete your crypt. <br />
+  <strong>Please note there is no backup</strong>, no going back. Once deleted, all data is lost forever.
+</p>
+
+<form method="POST" action="">
+  <input type="submit" value="I understand, remove all data." />
+</form>
+
+{% endblock %}

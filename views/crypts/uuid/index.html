@@ -16,4 +16,25 @@
   {% endif %} {% endfor %}
 </ul>
 
+<table>
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Event</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for event in events %}
+    <tr>
+      <td>
+        <script>
+          document.write(new Date('{{ event.created_at }}').toLocaleString());
+        </script>
+      </td>
+      <td>{{ event.event }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
 {% endblock %}

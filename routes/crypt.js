@@ -80,19 +80,39 @@ router.post('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, async (ctx) => {
 /**
  * Crypt main page
  */
-router.get('/crypts/:uuid', getCrypt, (ctx) => {
+router.get('/crypts/:uuid', getCrypt, async (ctx) => {
   const ACTIONS = {};
   ACTIONS[STATUS_EMPTY] = ['edit', 'delete'];
   ACTIONS[STATUS_INVALID] = ['edit', 'delete'];
   ACTIONS[STATUS_READY] = ['preview', 'edit', 'delete'];
   ACTIONS[STATUS_SENT] = ['delete'];
 
-  const events = db('crypt_events').where('crypt_uuid', ctx.crypt.uuid).orderBy('created_at', 'desc').limit(30);
+  const events = await db('crypt_events').where('crypt_uuid', ctx.crypt.uuid).orderBy('created_at', 'desc').limit(30).select('event', 'created_at');
 
   ctx.render('crypts/uuid/index.html', {
     title: 'Your crypt',
     events,
     actions: ACTIONS[ctx.crypt.status],
+  });
+});
+
+/**
+ * Show form to delete the crypt
+ */
+router.get('/crypts/:uuid/delete', getCrypt, (ctx) => {
+  ctx.render('crypts/uuid/delete.html', {
+    title: 'Delete crypt?',
+  });
+});
+
+/**
+ * Crypt delete page
+ */
+router.post('/crypts/:uuid/delete', getCrypt, async (ctx) => {
+  await db('crypts').delete('uuid', ctx.crypt.uuid);
+
+  ctx.render('crypts/uuid/deleted.html', {
+    title: 'Crypt deleted',
   });
 });
 
