@@ -10,7 +10,7 @@
   {% for action in actions %} {% if action == "edit" %}
   <li><a href="/crypts/{{ crypt.uuid }}/edit">Edit this crypt</a></li>
   {% elif action == "preview" %}
-  <li><a href="/crypts/{{ crypt.uuid }}/preview">Preview this crypt</a></li>
+  <li><a href="/crypts/{{ crypt.uuid }}/read?preview">Preview this crypt</a></li>
   {% elif action == "delete" %}
   <li><a href="/crypts/{{ crypt.uuid }}/delete">Delete this crypt forever</a></li>
   {% endif %} {% endfor %}

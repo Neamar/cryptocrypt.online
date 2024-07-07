@@ -46,7 +46,11 @@ router.get('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, (ctx) => {
 router.post('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, async (ctx) => {
   const fields = ['from_name', 'from_mail', 'to_name', 'to_mail', 'message'];
 
-  const payload = Object.fromEntries(fields.map(f => [f, (ctx.request.body[f] || '').trim()]));
+  const escapeHtml = (unsafe) => {
+    return unsafe.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');
+  };
+
+  const payload = Object.fromEntries(fields.map(f => [f, escapeHtml(ctx.request.body[f] || '').trim()]));
 
   const validEmails = ['from_mail', 'to_mail'].every(field => emailValidator.validate(payload[field]));
   const validMessage = !!payload['message'];
@@ -113,6 +117,17 @@ router.post('/crypts/:uuid/delete', getCrypt, async (ctx) => {
 
   ctx.render('crypts/uuid/deleted.html', {
     title: 'Crypt deleted',
+  });
+});
+
+
+/**
+ * Show form to delete the crypt
+ */
+router.get('/crypts/:uuid/read', getCrypt, (ctx) => {
+  console.log(ctx.query);
+  ctx.render('crypts/uuid/read.html', {
+    title: `A message from ${ctx.crypt.from_name} to ${ctx.crypt.to_name}`,
   });
 });
 

@@ -1,0 +1,34 @@
+{% extends "template.html"%} {% block main %} {% if crypt.status !== STATUS_SENT %}
+<p class="info">
+  This is a preview of your crypt, as it would be seen by {{ crypt.to_name }} if you did not answer communication attempts for some time.<br />
+  If this happened, this page would be automatically emailed to your next of kin, you don't need to do anything.<br />
+  Noticed an error? <a href="/crypts/{{ crypt.uuid }}/edit">Edit this crypt</a>
+</p>
+{% endif %}
+
+<p>
+  This message was written for you by {{ crypt.from_name }}, with instructions to send this to you should they stop answering communication.<br />
+  Sadly, we haven't heard back from {{ crypt.from_name }} in over a month, and we are now sharing the message he trusted us with.
+</p>
+
+<hr />
+<p>{{ crypt.message }}</p>
+
+<p>
+  <small
+    >Message created on
+    <script>
+      document.write(new Date('{{crypt.created_at }}').toLocaleDateString());
+    </script>
+    , last updated on
+    <script>
+      document.write(new Date('{{crypt.updated_at }}').toLocaleDateString());
+    </script>
+    .<br />{{ crypt.from_name }} was successfully contacted last on
+    <script>
+      document.write(new Date('{{crypt.refreshed_at }}').toLocaleDateString());
+    </script>
+    .
+  </small>
+</p>
+{% endblock %}
