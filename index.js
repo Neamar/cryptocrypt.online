@@ -1,6 +1,7 @@
 import Koa from 'koa';
 import Router from '@koa/router';
 import nunjucks from "nunjucks";
+import db from './db.js';
 
 const app = new Koa();
 const router = new Router();
@@ -15,3 +16,8 @@ app
   .use(router.allowedMethods());
 
 app.listen(3000);
+
+(async () => {
+  console.log(await db.raw('SELECT 1*6'));
+
+})();
