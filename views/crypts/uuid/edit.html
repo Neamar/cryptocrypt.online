@@ -1,7 +1,5 @@
-{% extends "template.html"%} {% block main %} {% if ctx.toast %}
-<p>{{ ctx.toast}}</p>
-{% elif crypt.status === STATUS_INVALID %}
-<p class="warning">This crypt is currently invalid, and will <strong>not</strong> be saved.</p>
+{% extends "template.html"%} {% block main %} {% if crypt.status === STATUS_INVALID %}
+<p class="warning">This crypt is currently invalid, and will <strong>not</strong> be sent as-is.</p>
 {% endif %}
 
 <form method="POST" action="">

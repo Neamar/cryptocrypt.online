@@ -20,7 +20,7 @@ export const up = async function (knex) {
 
   await knex.schema.createTable('crypt_events', function (t) {
     t.increments('id').unsigned().primary().notNullable();
-    t.uuid('crypt_uuid').notNullable();
+    t.uuid('crypt_uuid').notNullable().index();
     t.string('event').notNullable();
     t.dateTime('created_at').notNullable();
     t.string('ip').notNullable();

@@ -1,0 +1,19 @@
+{% extends "template.html"%} {% block main %} {% if crypt.status === STATUS_INVALID %}
+<p class="info">This crypt is currently invalid, and needs <a href="/crypts/{{ crypt.uuid}}/edit">to be edited</a> and fixed.</p>
+{% elif crypt.status === STATUS_READY %}
+<p class="info">This crypt is valid. You'll be contacted every month to check on your status.</p>
+{% elif crypt.status === STATUS_SENT %}
+<p class="info">This crypt has been shared with its intended recipient. If you've saved everything, you can now delete it.</p>
+{% endif %}
+
+<ul>
+  {% for action in actions %} {% if action == "edit" %}
+  <li><a href="/crypts/{{ crypt.uuid }}/edit">Edit this crypt</a></li>
+  {% elif action == "preview" %}
+  <li><a href="/crypts/{{ crypt.uuid }}/preview">Preview this crypt</a></li>
+  {% elif action == "delete" %}
+  <li><a href="/crypts/{{ crypt.uuid }}/delete">Delete this crypt forever</a></li>
+  {% endif %} {% endfor %}
+</ul>
+
+{% endblock %}

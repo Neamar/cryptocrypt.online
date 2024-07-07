@@ -12,6 +12,8 @@
 
   <body>
     <h1>{{ title }}</h1>
-    {% block main %} {% endblock %}
+    {% if ctx.toast %}
+    <p>{{ ctx.toast}}</p>
+    {% endif %} {% block main %} {% endblock %}
   </body>
 </html>
