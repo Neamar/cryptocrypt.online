@@ -1,23 +1,19 @@
 import Koa from 'koa';
-import Router from '@koa/router';
-import nunjucks from "nunjucks";
-import db from './db.js';
+
+import defaultRoutes from './routes/default.js';
+import cryptRoutes from './routes/crypt.js';
+import { readToast } from './middlewares/toast.js';
+import { addTemplate } from './middlewares/template.js';
 
 const app = new Koa();
-const router = new Router();
-nunjucks.configure('views', { autoescape: true });
 
-router.get('/', (ctx) => {
-  ctx.body = nunjucks.render('index.html', { foo: 'bar' });
-});
 
 app
-  .use(router.routes())
-  .use(router.allowedMethods());
+  .use(addTemplate)
+  .use(readToast)
+  .use(defaultRoutes.routes())
+  .use(defaultRoutes.allowedMethods())
+  .use(cryptRoutes.routes())
+  .use(cryptRoutes.allowedMethods());
 
-app.listen(3000);
-
-(async () => {
-  console.log(await db.raw('SELECT 1*6'));
-
-})();
+app.listen(process.env.PORT || 3000);
