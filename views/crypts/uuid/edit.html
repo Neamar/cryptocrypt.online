@@ -1,0 +1,49 @@
+{% extends "template.html"%} {% block main %} {% if ctx.toast %}
+<p>{{ ctx.toast}}</p>
+{% elif crypt.status === STATUS_INVALID %}
+<p class="warning">This crypt is currently invalid, and will <strong>not</strong> be saved.</p>
+{% endif %}
+
+<form method="POST" action="">
+  <h2>Who are you?</h2>
+  <p>
+    <label for="from_name">Your name</label>
+    <input type="text" name="from_name" id="from_name" value="{{ crypt.from_name}}" placeholder="John Doe" required />
+    <span class="hint">We'll use this name when contacting your next of kin to ensure they don't think it's spam.</span>
+  </p>
+  <p>
+    <label for="from_mail">Your email</label>
+    <input type="email" name="from_mail" id="from_mail" value="{{ crypt.from_mail}}" placeholder="john.doe@gmail.com" required />
+    <span class="hint">We'll use this mail to contact you regularly and ensure you're still around.</span>
+  </p>
+
+  <h2>Who should get your message?</h2>
+  <p>
+    <label for="to_name">Recipient name</label>
+    <input type="text" name="to_name" id="to_name" value="{{ crypt.to_name}}" placeholder="Jane Doe" required />
+    <span class="hint">We'll use your next of kin name when contacting them to ensure they don't think it's spam.</span>
+  </p>
+  <p>
+    <label for="to_mail">Your email</label>
+    <input type="email" name="to_mail" id="to_mail" value="{{ crypt.to_mail}}" placeholder="jane.doe@gmail.com" required />
+    <span class="hint">Triple check this field!</span>
+  </p>
+
+  <h2>Your message</h2>
+  <p>
+    What are your instructions to help your next of kin access your wallet?<br />
+    They'll only receive this after you disappear.
+  </p>
+
+  <ul>
+    <li><a href="/examples">Example instructions</a></li>
+    <li><a href="/trust">I don't trust you nor your website</a></li>
+  </ul>
+
+  <p>
+    <textarea name="message" id="message" required placeholder="Type your message here">{{ crypt.message }}</textarea>
+  </p>
+
+  <input type="submit" value="Save" />
+</form>
+{% endblock %}

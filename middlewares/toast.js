@@ -8,10 +8,13 @@ export const setToast = (toast, ctx) => {
 export const readToast = async (ctx, next) => {
   const toast = ctx.cookies.get('toast');
   ctx.toast = toast;
+  ctx.setToast = (toast) => {
+    ctx.cookies.set('toast', toast);
+  };
 
   await next();
 
-  if (ctx.status < 300) {
+  if (toast && ctx.status < 300) {
     ctx.cookies.set('toast');
   }
 };

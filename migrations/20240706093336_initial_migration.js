@@ -4,16 +4,16 @@
 export const up = async function (knex) {
   await knex.schema.createTable('crypts', function (t) {
     t.uuid('uuid').primary().defaultTo(knex.fn.uuid()).notNullable();
-    t.string('from_name');
-    t.string('from_mail');
-    t.string('to_name');
-    t.string('to_mail');
-    t.text('message');
+    t.string('from_name').notNullable().defaultTo('');
+    t.string('from_mail').notNullable().defaultTo('');
+    t.string('to_name').notNullable().defaultTo('');
+    t.string('to_mail').notNullable().defaultTo('');
+    t.text('message').notNullable().defaultTo('');
     t.text('encrypted_message');
-    t.string('status').defaultTo('uninitialized');
-    t.dateTime('created_at').comment("When this crypt was created");
-    t.dateTime('updated_at').comment("When this crypt was updated (from/to/message update)");
-    t.dateTime('refreshed_at').comment("When this crypt was last refreshed (activity confirmed)");
+    t.string('status').notNullable();
+    t.dateTime('created_at').comment("When this crypt was created").notNullable();
+    t.dateTime('updated_at').comment("When this crypt was updated (from/to/message update)").notNullable();
+    t.dateTime('refreshed_at').comment("When this crypt was last refreshed (activity confirmed)").notNullable();
     t.dateTime('triggered_at').comment("When this crypt was sent to recipient");
     t.dateTime('read_at').comment("When this crypt was read by recipient");
   });
