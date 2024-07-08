@@ -3,7 +3,7 @@
  */
 export const up = async function (knex) {
   await knex.schema.createTable('crypts', function (t) {
-    t.uuid('uuid').primary().defaultTo(knex.fn.uuid()).notNullable();
+    t.uuid('uuid').primary().notNullable();
     t.string('from_name').notNullable().defaultTo('');
     t.string('from_mail').notNullable().defaultTo('');
     t.string('to_name').notNullable().defaultTo('');

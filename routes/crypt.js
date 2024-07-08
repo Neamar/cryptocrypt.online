@@ -1,5 +1,6 @@
 import Router from '@koa/router';
 import emailValidator from 'email-validator';
+import { randomUUID } from 'crypto';
 
 import db from '../db.js';
 import { logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READY, STATUS_SENT, } from '../models/crypts.js';
@@ -10,14 +11,19 @@ const router = new Router();
  * Create a new crypt, redirects to the new object
  */
 router.post('/create', async (ctx) => {
-  let cryptUuid;
+  // The UUID is generated using a cryptographic pseudorandom number generator.
+  // This avoids a pitfall in Postgres where gen_random_uuid could silently fall back to a non-cryptographic RNG.
+  // https://security.stackexchange.com/questions/93902/is-postgress-uuid-generate-v4-securely-random
+  const cryptUuid = randomUUID();
+  const now = new Date();
   await db.transaction(async (trx) => {
-    cryptUuid = (await db('crypts').insert({
-      created_at: new Date(),
-      updated_at: new Date(),
-      refreshed_at: new Date(),
+    await db('crypts').insert({
+      uuid: cryptUuid,
+      created_at: now,
+      updated_at: now,
+      refreshed_at: now,
       status: STATUS_EMPTY
-    }).returning('uuid'))[0].uuid;
+    });
     await logCryptEvent(cryptUuid, 'Crypt created', ctx, trx);
   });
 
