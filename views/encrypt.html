@@ -1,0 +1,44 @@
+{% set title = "Encrypted content" %} {% extends "template.html"%} {% block main %}
+
+<p>
+  Advanced users can decide to include encrypted content.<br />
+  Be careful: if you use this and the recipient doesn't know how to decrypt, you won't be around anymore to help them...
+</p>
+
+<p class="warning">This is considered an advanced feature, and I don't recommend using it unless you fully understand the implications.</p>
+
+<p>
+  If you still decide to use this, you'll have to generate an encrypted file on your own computer, and ensure you include all the information required
+  for your recipient to unlock the content.
+</p>
+
+<h2>Generating an encrypted file</h2>
+<p>This is up to you, and you can use any tool you're comfortable with.</p>
+
+<p>
+  As an example, you could use openssl:
+  <tt>echo "this is the message I want to include" | openssl enc -aes-256-cbc -pbkdf2 -iter 500000 -salt > ~/secret.enc</tt>.<br />
+</p>
+
+<p class="info">
+  Although this sounds like a great idea, I recommend against using a symmetric algorithm based on your recipient public key. This might change at any
+  time.
+</p>
+
+<h2>Include all the information they'll need!</h2>
+<p>
+  From your edit page, click on "Advanced" and select the encrypted file you created.<br />Be sure to include in the message above all the
+  instructions that will be needed for decrypting: the IV/salt if you used any, number of iterations, password...
+</p>
+
+<p>For the example above, we'd include the file <tt>secret.enc</tt>, and the message would be something like this:</p>
+
+<blockquote>
+  To access the instructions, you'll need a command line with <tt>openssl</tt> available. Download the file below, and you can then use
+  <tt>cat secret.enc | openssl enc -d -aes-256-cbc -pbkdf2 -iter 500000</tt> to unlock the content.<br />
+  When prompted for a password, use the lower cased version of &lt;the name of our cat in 2026/the name of our first kid/your maiden name/my social
+  security number&gt;
+</blockquote>
+
+<p class="info">For obvious reasons, do not include the password directly in the message, and make sure to be very specific.</p>
+{% endblock %}

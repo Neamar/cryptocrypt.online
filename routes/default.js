@@ -22,6 +22,10 @@ router.get('/words', (ctx) => {
   ctx.render('words.html');
 });
 
+router.get('/encrypt', (ctx) => {
+  ctx.render('encrypt.html');
+});
+
 router.get('/faq', (ctx) => {
   const qas = {
     'What is cryptocrypt?': `Cryptocrypt is a free webservice to set up a delayed email. You create this email now, telling your loved ones where they can find your recovery phrase.
