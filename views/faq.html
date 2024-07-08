@@ -1,0 +1,4 @@
+{% extends "template.html"%} {% block main %} {% for q, a in qas%}
+<h2>{{ q|safe }}</h2>
+<p>{{ a|safe|nl2br }}</p>
+{% endfor %} {% endblock %}

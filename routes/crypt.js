@@ -125,7 +125,6 @@ router.post('/crypts/:uuid/delete', getCrypt, async (ctx) => {
  * Show form to delete the crypt
  */
 router.get('/crypts/:uuid/read', getCrypt, (ctx) => {
-  console.log(ctx.query);
   ctx.render('crypts/uuid/read.html', {
     title: `A message from ${ctx.crypt.from_name} to ${ctx.crypt.to_name}`,
   });
