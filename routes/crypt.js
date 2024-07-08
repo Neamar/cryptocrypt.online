@@ -1,10 +1,11 @@
 import Router from '@koa/router';
 import emailValidator from 'email-validator';
 import { randomUUID } from 'crypto';
-
+import { readFileSync } from 'fs';
 import db from '../db.js';
 import { logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READY, STATUS_SENT, } from '../models/crypts.js';
 import { getCrypt, requireUnsentCrypt } from '../middlewares/crypt.js';
+import { NotFound } from 'fejl';
 const router = new Router();
 
 /**
@@ -72,6 +73,26 @@ router.post('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, async (ctx) => {
     await logCryptEvent(ctx.crypt.uuid, 'Crypt updated', ctx, trx);
   });
 
+  if (ctx?.request?.files?.encrypted_message) {
+    if (ctx.request.files.encrypted_message.size >= 100000) {
+      ctx.setToast(`The file you included is too large, you should include encrypted text, not images!`);
+      ctx.redirect(`/crypts/${ctx.crypt.uuid}/edit`);
+      return;
+    }
+
+    const fileName = escapeHtml(ctx.request.files.encrypted_message.name);
+    const content = readFileSync(ctx.request.files.encrypted_message.path);
+
+    await db.transaction(async (trx) => {
+      await db('crypts').update({
+        encrypted_message_name: fileName,
+        encrypted_message: content,
+        updated_at: new Date(),
+      }).where('uuid', ctx.crypt.uuid);
+      await logCryptEvent(ctx.crypt.uuid, 'Crypt updated with new encoded file', ctx, trx);
+    });
+  }
+
   if (payload['status'] === STATUS_READY) {
     ctx.setToast("Your crypt was saved.");
     ctx.redirect(`/crypts/${ctx.crypt.uuid}`);
@@ -136,4 +157,15 @@ router.get('/crypts/:uuid/read', getCrypt, (ctx) => {
   });
 });
 
+/**
+ * Crypt encrypted message
+ */
+router.get('/crypts/:uuid/file', async (ctx) => {
+  const crypt = await db('crypts').where('uuid', ctx.params.uuid).whereNotNull('encrypted_message').select('encrypted_message', 'encrypted_message_name').first();
+  NotFound.assert(crypt, 'No file associated with this crypt.');
+
+  console.log(`attachment; filename="${crypt.encrypted_message_name}"`);
+  ctx.set('content-disposition', `attachment; filename="${crypt.encrypted_message_name}"`);
+  ctx.body = crypt.encrypted_message;
+});
 export default router;

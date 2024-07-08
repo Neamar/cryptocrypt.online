@@ -2,7 +2,7 @@
 <p class="warning">This crypt is currently invalid, and will <strong>not</strong> be sent as-is.</p>
 {% endif %}
 
-<form method="POST" action="">
+<form method="POST" action="" enctype="multipart/form-data">
   <h2>Who are you?</h2>
   <p>
     <label for="from_name">Your name</label>
@@ -41,6 +41,23 @@
   <p>
     <textarea name="message" id="message" required placeholder="Type your message here">{{ crypt.message }}</textarea>
   </p>
+
+  <details>
+    <summary>Advanced options</summary>
+    <p>
+      You can use the field below to include an encrypted message.<br />
+      This is for advanced users, or if you have confidence that your recipient has enough technical skill to be able to figure out how to decrypt
+      this.<br />
+      See <a href="/encrypt">this page</a> for more details.
+    </p>
+
+    <p>
+      {% if crypt.encrypted_message_name %} Currently using <a href="/crypts/{{ crypt.uuid }}/file">{{ crypt.encrypted_message_name }}</a>.<br />
+      {% endif %}
+
+      <input type="file" name="encrypted_message" />
+    </p>
+  </details>
 
   <input type="submit" value="Save" />
 </form>

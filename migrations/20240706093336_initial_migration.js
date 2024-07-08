@@ -1,3 +1,5 @@
+import { STATUS_EMPTY, STATUS_INVALID, STATUS_READY, STATUS_SENT } from '../models/crypts.js';
+
 /**
  * @param { import("knex").Knex } knex
  */
@@ -9,8 +11,9 @@ export const up = async function (knex) {
     t.string('to_name').notNullable().defaultTo('');
     t.string('to_mail').notNullable().defaultTo('');
     t.text('message').notNullable().defaultTo('');
-    t.text('encrypted_message');
-    t.string('status').notNullable();
+    t.string('encrypted_message_name').notNullable().defaultTo('');
+    t.binary('encrypted_message');
+    t.enum('status', [STATUS_EMPTY, STATUS_INVALID, STATUS_READY, STATUS_SENT], { useNative: true, enumName: 'crypt_status' }).notNullable();
     t.dateTime('created_at').comment("When this crypt was created").notNullable();
     t.dateTime('updated_at').comment("When this crypt was updated (from/to/message update)").notNullable();
     t.dateTime('refreshed_at').comment("When this crypt was last refreshed (activity confirmed)").notNullable();

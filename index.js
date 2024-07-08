@@ -2,6 +2,7 @@ import Koa from 'koa';
 import koaLogger from 'koa-logger';
 import koaStatic from 'koa-static';
 import koaRatelimit from 'koa-ratelimit';
+import koaFormidable from 'koa2-formidable';
 
 import defaultRoutes from './routes/default.js';
 import cryptRoutes from './routes/crypt.js';
@@ -28,6 +29,7 @@ app
       return !ctx.request.path.startsWith('/crypts');
     },
   }))
+  .use(koaFormidable())
   .use(bodyParser())
   .use(addTemplate)
   .use(readToast)
