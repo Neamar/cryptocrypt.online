@@ -7,19 +7,19 @@ router.get('/', (ctx) => {
 });
 
 router.get('/donate', (ctx) => {
-  ctx.render('donate.html', { title: "Donate to Cryptocrypt" });
+  ctx.render('donate.html');
 });
 
 router.get('/examples', (ctx) => {
-  ctx.render('examples.html', { title: "Example uses of cryptocrypt" });
+  ctx.render('examples.html');
 });
 
 router.get('/writing', (ctx) => {
-  ctx.render('writing.html', { title: "Advice to write your message" });
+  ctx.render('writing.html');
 });
 
 router.get('/words', (ctx) => {
-  ctx.render('words.html', { title: "What should I do with my words?" });
+  ctx.render('words.html');
 });
 
 router.get('/faq', (ctx) => {
