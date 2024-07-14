@@ -8,6 +8,7 @@ import { getCrypt, requireUnsentCrypt } from '../middlewares/crypt.js';
 import { NotFound } from 'fejl';
 const router = new Router();
 
+
 /**
  * Create a new crypt, redirects to the new object
  */
@@ -32,6 +33,7 @@ router.post('/create', async (ctx) => {
   ctx.redirect(`/crypts/${cryptUuid}/warnings`);
 });
 
+
 /**
  * Display warnings about crypt usage
  */
@@ -46,6 +48,7 @@ router.get('/crypts/:uuid/warnings', getCrypt, (ctx) => {
 router.get('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, (ctx) => {
   ctx.render('crypts/uuid/edit.html', { title: "Edit your crypt" });
 });
+
 
 /**
  * Save crypt changes
@@ -108,6 +111,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, async (ctx) => {
   }
 });
 
+
 /**
  * Crypt main page
  */
@@ -127,6 +131,7 @@ router.get('/crypts/:uuid', getCrypt, async (ctx) => {
   });
 });
 
+
 /**
  * Show form to delete the crypt
  */
@@ -135,6 +140,7 @@ router.get('/crypts/:uuid/delete', getCrypt, (ctx) => {
     title: 'Delete crypt?',
   });
 });
+
 
 /**
  * Crypt delete page
@@ -149,13 +155,14 @@ router.post('/crypts/:uuid/delete', getCrypt, async (ctx) => {
 
 
 /**
- * Show form to delete the crypt
+ * Show crypt content (and a preview warning if status <> sent)
  */
 router.get('/crypts/:uuid/read', getCrypt, (ctx) => {
   ctx.render('crypts/uuid/read.html', {
     title: `A message from ${ctx.crypt.from_name} to ${ctx.crypt.to_name}`,
   });
 });
+
 
 /**
  * Crypt encrypted message
@@ -164,7 +171,6 @@ router.get('/crypts/:uuid/file', async (ctx) => {
   const crypt = await db('crypts').where('uuid', ctx.params.uuid).whereNotNull('encrypted_message').select('encrypted_message', 'encrypted_message_name').first();
   NotFound.assert(crypt, 'No file associated with this crypt.');
 
-  console.log(`attachment; filename="${crypt.encrypted_message_name}"`);
   ctx.set('content-disposition', `attachment; filename="${crypt.encrypted_message_name}"`);
   ctx.body = crypt.encrypted_message;
 });

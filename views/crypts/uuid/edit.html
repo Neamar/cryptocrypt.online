@@ -52,7 +52,8 @@
     </p>
 
     <p>
-      {% if crypt.encrypted_message_name %} Currently using <a href="/crypts/{{ crypt.uuid }}/file">{{ crypt.encrypted_message_name }}</a>.<br />
+      {% if crypt.encrypted_message_name %} Currently using
+      <a href="/crypts/{{ crypt.uuid }}/file">{{ crypt.encrypted_message_name }}</a> ({{ crypt.encrypted_message_length }}).<br />
       {% endif %}
 
       <input type="file" name="encrypted_message" />

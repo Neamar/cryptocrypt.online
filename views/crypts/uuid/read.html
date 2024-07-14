@@ -14,6 +14,12 @@
 <hr />
 <p>{{ crypt.message }}</p>
 
+{% if crypt.encrypted_message_name %}
+<p>
+  Attached file:&nbsp;<a href="/crypts/{{ crypt.uuid }}/file">{{ crypt.encrypted_message_name }}</a> ({{ crypt.encrypted_message_length }}). {% endif
+  %}
+</p>
+
 <p>
   <small
     >Message created on
