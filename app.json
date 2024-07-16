@@ -1,0 +1,12 @@
+{
+  "cron": [
+    {
+      "command": "crypt-healthcheck",
+      "schedule": "0 0 1,15,22,25,28 * *"
+    },
+    {
+      "command": "crypt-release",
+      "schedule": "0 0 5 * *"
+    }
+  ]
+}
