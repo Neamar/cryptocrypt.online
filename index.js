@@ -9,6 +9,7 @@ import cryptRoutes from './routes/crypt.js';
 import { readToast } from './middlewares/toast.js';
 import { addTemplate } from './middlewares/template.js';
 import { bodyParser } from '@koa/bodyparser';
+import { addCSP } from './middlewares/csp.js';
 
 const app = new Koa();
 
@@ -32,6 +33,8 @@ app
       return !ctx.request.path.startsWith('/crypts');
     },
   }))
+  // Add Content Security Policy headers
+  .use(addCSP)
   // parse file data in <form>
   .use(koaFormidable())
   // parse body data
