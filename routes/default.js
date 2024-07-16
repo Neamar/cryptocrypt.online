@@ -41,7 +41,7 @@ router.get('/faq', (ctx) => {
     "Why is there no authentication?": `We want to keep things simple, and easy to use for you for the next decade. Accounts are cumbersome, but we can assume your email will be the most stable thing however.
     By using UUID, we guarantee that no one can ever find your address. The level of security is roughly the same as the probability of finding a Bitcoin wallet by typing random words: there are <a href='https://download.wpsoftware.net/bitcoin-birthday.pdf'>2<sup>160</sup> possible Bitcoint wallets</a>, and there are 2<sup>122</sup> UUIDs. Additionally, this website includes heavy rate limiting, to limit even more enumeration attacks.`,
     'Can I have multiple crypts?': 'Yes. There is no limit to the number of crypts you can have.',
-    'How can I trust that this service will still be running when I die, hopefully in years?': "I use this service for myself too, so it'll be running in the foreseeable future for sure. If you're really concerned, <a href=\"https://github.com/Neamar/cryptocrypt\">you can self-host</a> for free.",
+    'How can I trust that this service will still be running when I die, hopefully in years?': "I use this service for myself too, so it'll be running in the foreseeable future for sure. If you're really concerned, <a href=\"https://github.com/Neamar/cryptocrypt.online\">you can self-host</a> for free.",
   };
   ctx.render('faq.html', { title: 'Cryptocrypt FAQ', qas });
 });

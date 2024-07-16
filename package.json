@@ -13,14 +13,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Neamar/cryptocrypt.git"
+    "url": "git+https://github.com/Neamar/cryptocrypt.online.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Neamar/cryptocrypt/issues"
+    "url": "https://github.com/Neamar/cryptocrypt.online/issues"
   },
-  "homepage": "https://github.com/Neamar/cryptocrypt#readme",
+  "homepage": "https://cryptocrypt.online",
   "dependencies": {
     "@koa/bodyparser": "^5.1.1",
     "@koa/router": "^12.0.1",
