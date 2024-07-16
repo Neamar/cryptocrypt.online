@@ -76,7 +76,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, async (ctx) => {
     await logCryptEvent(ctx.crypt.uuid, 'Crypt updated', ctx, trx);
   });
 
-  if (ctx?.request?.files?.encrypted_message) {
+  if (ctx?.request?.files?.encrypted_message && ctx.request.files.encrypted_message.size > 0) {
     if (ctx.request.files.encrypted_message.size >= 100000) {
       ctx.setToast(`The file you included is too large, you should include encrypted text, not images!`);
       ctx.redirect(`/crypts/${ctx.crypt.uuid}/edit`);
