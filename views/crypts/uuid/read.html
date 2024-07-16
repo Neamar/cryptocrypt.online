@@ -21,20 +21,16 @@
 </p>
 
 <p>
-  <small
-    >Message created on
-    <script>
-      document.write(new Date('{{crypt.created_at }}').toLocaleDateString());
+  <small>
+    <script nonce="{{ ctx.nonce }}">
+      const createdAt = new Date('{{crypt.created_at }}').toLocaleDateString();
+      const updatedAt = new Date('{{crypt.updated_at }}').toLocaleDateString();
+      const refreshedAt = new Date('{{crypt.refreshed_at }}').toLocaleDateString();
+
+      document.write(
+        `Message created on ${createdAt}, last updated on ${updatedAt}.<br />{{ crypt.from_name }} was successfully contacted last on ${refreshedAt}.`,
+      );
     </script>
-    , last updated on
-    <script>
-      document.write(new Date('{{crypt.updated_at }}').toLocaleDateString());
-    </script>
-    .<br />{{ crypt.from_name }} was successfully contacted last on
-    <script>
-      document.write(new Date('{{crypt.refreshed_at }}').toLocaleDateString());
-    </script>
-    .
   </small>
 </p>
 {% endblock %}
