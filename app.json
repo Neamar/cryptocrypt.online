@@ -8,5 +8,15 @@
       "command": "crypt-release",
       "schedule": "0 0 5 * *"
     }
-  ]
+  ],
+  "healthchecks": {
+    "web": [
+      {
+        "type": "startup",
+        "name": "web check",
+        "description": "Checking if the app responds to the / endpoint",
+        "path": "/"
+      }
+    ]
+  }
 }
