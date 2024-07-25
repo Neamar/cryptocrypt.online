@@ -12,7 +12,7 @@ const router = new Router();
 /**
  * Create a new crypt, redirects to the new object
  */
-router.post('/create', async (ctx) => {
+router.post('/crypts/create', async (ctx) => {
   // The UUID is generated using a cryptographic pseudorandom number generator.
   // This avoids a pitfall in Postgres where gen_random_uuid could silently fall back to a non-cryptographic RNG.
   // https://security.stackexchange.com/questions/93902/is-postgress-uuid-generate-v4-securely-random
@@ -78,7 +78,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, async (ctx) => {
 
   if (ctx?.request?.files?.encrypted_message && ctx.request.files.encrypted_message.size > 0) {
     if (ctx.request.files.encrypted_message.size >= 100000) {
-      ctx.setToast(`The file you included is too large, you should include encrypted text, not images!`);
+      ctx.setToast(`The file you included is too large, you should include encrypted text, not images!`, 'error');
       ctx.redirect(`/crypts/${ctx.crypt.uuid}/edit`);
       return;
     }
@@ -106,7 +106,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, async (ctx) => {
     !validMessage && invalid.push("missing message");
     !validNames && invalid.push("missing names");
 
-    ctx.setToast(`Your crypt was saved, but some information is still missing: ${invalid.join(', ')}`);
+    ctx.setToast(`Your crypt was saved, but some information is still missing: ${invalid.join(', ')}`, 'warn');
     ctx.redirect(`/crypts/${ctx.crypt.uuid}/edit`);
   }
 });
@@ -175,3 +175,28 @@ router.get('/crypts/:uuid/file', async (ctx) => {
   ctx.body = crypt.encrypted_message;
 });
 export default router;
+
+
+/**
+ * Confirm the user is doing a-OK still
+ */
+router.get('/crypts/:uuid/healthcheck', getCrypt, async (ctx) => {
+  const crypt = ctx.crypt;
+  const now = new Date();
+  var firstDayOfTheMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  if (crypt.refreshed_at < firstDayOfTheMonth) {
+    crypt.refreshed_at = new Date();
+    // Refresh last crypt usage, user is still alive!
+    await db('crypts').where('uuid', crypt.uuid).update({
+      refreshed_at: crypt.refreshed_at,
+      times_contacted: 0
+    });
+
+    ctx.setToast("Thanks for confirming! See you next month.", 'info');
+  }
+
+
+  ctx.render('crypts/uuid/healthcheck.html', {
+    title: `Crypt healthcheck`,
+  });
+});

@@ -13,7 +13,6 @@ import { addCSP } from './middlewares/csp.js';
 
 const app = new Koa();
 
-
 app
   // gives access to ctx.log.info
   .use(koaBunyanLogger())

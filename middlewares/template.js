@@ -1,7 +1,7 @@
 import nunjucks from "nunjucks";
 import { STATUS_EMPTY, STATUS_INVALID, STATUS_READY, STATUS_SENT } from '../models/crypts.js';
+import { isProd } from '../helpers/env.js';
 
-const isProd = process.env.NODE_ENV === 'production';
 
 nunjucks.configure('views', { autoescape: true, noCache: !isProd, throwOnUndefined: !isProd, });
 
