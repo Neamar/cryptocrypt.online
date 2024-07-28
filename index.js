@@ -10,8 +10,9 @@ import { readToast } from './middlewares/toast.js';
 import { addTemplate } from './middlewares/template.js';
 import { bodyParser } from '@koa/bodyparser';
 import { addCSP } from './middlewares/csp.js';
+import { isTest } from './helpers/env.js';
 
-const app = new Koa();
+export const app = new Koa();
 
 app
   // gives access to ctx.log.info
@@ -29,7 +30,7 @@ app
     disableHeader: true,
     whitelist: (ctx) => {
       // Only rate limit the /crypts endpoints (which include crypts creation)
-      return !ctx.request.path.startsWith('/crypts');
+      return isTest || !ctx.request.path.startsWith('/crypts');
     },
   }))
   // Add Content Security Policy headers
@@ -51,4 +52,4 @@ app
   // serve static files (favicon, manifest, ...)
   .use(koaStatic('static'));
 
-app.listen(process.env.PORT || 3000);
+export const server = app.listen(process.env.PORT || 3000);

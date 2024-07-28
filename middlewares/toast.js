@@ -1,7 +1,3 @@
-export const setToast = (toast, ctx) => {
-  ctx.cookies.set('toast', toast);
-};
-
 /**
  * Used as Koa middleware to set the toast directly on the ctx for easy access
  */

@@ -29,7 +29,7 @@ router.post('/crypts/create', async (ctx) => {
     await logCryptEvent(cryptUuid, 'Crypt created', ctx, trx);
   });
 
-  ctx.cookies.set('toast', 'A new crypt was created.');
+  ctx.setToast('A new crypt was created.');
   ctx.redirect(`/crypts/${cryptUuid}/warnings`);
 });
 
@@ -201,7 +201,6 @@ router.get('/crypts/:uuid/healthcheck', getCrypt, requireCryptStatus([STATUS_REA
 
     ctx.setToast("Thanks for confirming! See you next month.", 'info');
   }
-
 
   ctx.render('crypts/uuid/healthcheck.html', {
     title: `Crypt healthcheck`,

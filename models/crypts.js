@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import db from '../db.js';
 
 export const STATUS_EMPTY = 'empty';

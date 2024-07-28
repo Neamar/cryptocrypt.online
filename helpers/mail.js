@@ -1,6 +1,6 @@
 import sgMail from '@sendgrid/mail';
 import logger from '../jobs/helpers/logger.js';
-import { isProd } from './env.js';
+import { isProd, isTest } from './env.js';
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -9,9 +9,9 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
  * @param {sgMail.MailDataRequired} msg
  */
 export const sendEmail = async (msg) => {
-  if (!isProd) {
+  if (!isProd || isTest) {
     logger.warn("Fake-sending email", msg);
-    // return;
+    return;
   }
   try {
     await sgMail.send(msg);
