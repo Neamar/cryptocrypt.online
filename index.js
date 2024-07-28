@@ -11,12 +11,13 @@ import { addTemplate } from './middlewares/template.js';
 import { bodyParser } from '@koa/bodyparser';
 import { addCSP } from './middlewares/csp.js';
 import { isTest } from './helpers/env.js';
+import { webLogger } from './jobs/helpers/logger.js';
 
 export const app = new Koa();
 
 app
   // gives access to ctx.log.info
-  .use(koaBunyanLogger())
+  .use(koaBunyanLogger(webLogger))
   // automatically log requests
   .use(koaBunyanLogger.requestLogger())
   // rate limit access to /crypts/* endpoint

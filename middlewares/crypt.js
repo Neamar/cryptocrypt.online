@@ -14,7 +14,7 @@ export const getCrypt = async (ctx, next) => {
 
 export const requireCryptStatus = (statuses) => {
   return async (ctx, next) => {
-    BadRequest.assert(statuses.indexOf(ctx.crypt.status) !== -1, 'This crypt has been sent already.');
+    BadRequest.assert(statuses.indexOf(ctx.crypt.status) !== -1, 'This action is not available for this crypt.');
 
     return next();
   };
