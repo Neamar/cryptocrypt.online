@@ -2,7 +2,7 @@
 <p class="info">
   This is a preview of your crypt, as it would be seen by {{ crypt.to_name }} if you did not answer communication attempts for some time.<br />
   If this happened, this page (minus this banner) would be automatically emailed to your next of kin, you don't need to do anything.<br />
-  Noticed an error? <a href="/crypts/{{ crypt.uuid }}/edit">Edit this crypt</a>
+  Notice an error? <a href="/crypts/{{ crypt.uuid }}/edit">Edit this crypt</a>
 </p>
 {% endif %}
 
@@ -12,6 +12,7 @@
 </p>
 
 <hr />
+
 <p>{{ crypt.message }}</p>
 
 {% if crypt.encrypted_message_name %}

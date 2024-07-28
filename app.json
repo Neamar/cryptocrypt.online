@@ -18,5 +18,11 @@
         "path": "/"
       }
     ]
+  },
+  "env": {
+    "SELF_URL": {
+      "description": "The domain this process is deployed on.",
+      "value": "https://cryptocrypt.online"
+    }
   }
 }

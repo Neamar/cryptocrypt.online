@@ -2,19 +2,20 @@ import pMap from 'p-map';
 import db from '../db.js';
 import jobLogger from './helpers/logger.js';
 import { sendEmail } from '../helpers/mail.js';
+import { STATUS_READY } from '../models/crypts.js';
 
 const logger = jobLogger.child({ job: 'healthcheck' });
 
 const contactTemplates = [
   {
-    subject: (_) => "Please confirm you're well",
+    subject: () => "Please confirm you're well",
     html: (crypt, link) => `<p>Dear ${crypt.from_name},<br>You have a crypt including information you'd like to share in the event of your death.</p>
     <p>If you're still around, great! Please <a href="${link}">click on this link and carry on</a>.</p>
 
     <p>If you ignore this message, the next reminder will be sent in 15 days.<br>After 35 inactive days, your message will be sent to ${crypt.to_name}.</p>`
   },
   {
-    subject: (_) => "Please confirm you're well (second reminder)",
+    subject: () => "Please confirm you're well (second reminder)",
     html: (crypt, link) => `<p>Dear ${crypt.from_name},<br>You have a crypt including information you'd like to share in the event of your death.</p>
     <p>If you're still around, great! Please <a href="${link}">click on this link and carry on</a>.</p>
 
@@ -58,14 +59,15 @@ export default async function main() {
   logger.info("Finding crypts that haven't been active this month");
   const cryptsToNotify = await db('crypts')
     .select('uuid', 'from_name', 'from_mail', 'to_name', 'times_contacted')
-    .where('refreshed_at', '<', db.raw("DATE_TRUNC('month', current_date)"));
+    .where('refreshed_at', '<', db.raw("DATE_TRUNC('month', current_date)"))
+    .where('status', STATUS_READY);
 
-  logger.info("Emailing crypts", { crypts: cryptsToNotify.map(c => c.uuid) });
+  logger.info("Healthchecking crypts", { crypts: cryptsToNotify.map(c => c.uuid) });
 
   await pMap(cryptsToNotify, async (crypt) => {
     const template = contactTemplates[Math.min(crypt.times_contacted, contactTemplates.length - 1)];
-    const link = `https://cryptocrypt.online/crypts/${crypt.uuid}/healthcheck`;
-    const footerInfo = '<hr /><p><small>If you want to review your crypt content, <a href="https://cryptocrypt.online/crypts/${crypt.uuid}/">visit here</a>.</small></p>';
+    const link = `${process.env.SELF_URL}/crypts/${crypt.uuid}/healthcheck`;
+    const footerInfo = `<hr /><p><small>If you want to review your crypt content, <a href="${process.env.SELF_URL}/crypts/${crypt.uuid}/">visit here</a>.</small></p>`;
 
     const email = {
       from: {

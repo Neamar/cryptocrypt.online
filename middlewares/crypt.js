@@ -1,6 +1,5 @@
 import db from '../db.js';
 import { BadRequest, NotFound } from 'fejl';
-import { STATUS_SENT } from '../models/crypts.js';
 
 export const getCrypt = async (ctx, next) => {
   // Retrieve the crypt, except encrypted message.
@@ -13,8 +12,10 @@ export const getCrypt = async (ctx, next) => {
   return next();
 };
 
-export const requireUnsentCrypt = async (ctx, next) => {
-  BadRequest.assert(ctx.crypt.status !== STATUS_SENT, 'This crypt has been sent already.');
+export const requireCryptStatus = (statuses) => {
+  return async (ctx, next) => {
+    BadRequest.assert(statuses.indexOf(ctx.crypt.status) !== -1, 'This crypt has been sent already.');
 
-  return next();
+    return next();
+  };
 };

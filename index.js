@@ -28,7 +28,7 @@ app
     max: 10,
     disableHeader: true,
     whitelist: (ctx) => {
-      // Only rate limit the crypts
+      // Only rate limit the /crypts endpoints (which include crypts creation)
       return !ctx.request.path.startsWith('/crypts');
     },
   }))

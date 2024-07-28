@@ -3,8 +3,8 @@ import emailValidator from 'email-validator';
 import { randomUUID } from 'crypto';
 import { readFileSync } from 'fs';
 import db from '../db.js';
-import { logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READY, STATUS_SENT, } from '../models/crypts.js';
-import { getCrypt, requireUnsentCrypt } from '../middlewares/crypt.js';
+import { logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT, } from '../models/crypts.js';
+import { getCrypt, requireCryptStatus } from '../middlewares/crypt.js';
 import { NotFound } from 'fejl';
 const router = new Router();
 
@@ -37,7 +37,7 @@ router.post('/crypts/create', async (ctx) => {
 /**
  * Display warnings about crypt usage
  */
-router.get('/crypts/:uuid/warnings', getCrypt, (ctx) => {
+router.get('/crypts/:uuid/warnings', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_INVALID, STATUS_READY]), (ctx) => {
   ctx.render('crypts/uuid/warnings.html', { title: "Read me first" });
 });
 
@@ -45,7 +45,7 @@ router.get('/crypts/:uuid/warnings', getCrypt, (ctx) => {
 /**
  * Show form to edit the crypt
  */
-router.get('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, (ctx) => {
+router.get('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_INVALID, STATUS_READY]), (ctx) => {
   ctx.render('crypts/uuid/edit.html', { title: "Edit your crypt" });
 });
 
@@ -53,7 +53,7 @@ router.get('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, (ctx) => {
 /**
  * Save crypt changes
  */
-router.post('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, async (ctx) => {
+router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_INVALID, STATUS_READY]), async (ctx) => {
   const fields = ['from_name', 'from_mail', 'to_name', 'to_mail', 'message'];
 
   const escapeHtml = (unsafe) => {
@@ -115,7 +115,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireUnsentCrypt, async (ctx) => {
 /**
  * Crypt main page
  */
-router.get('/crypts/:uuid', getCrypt, async (ctx) => {
+router.get('/crypts/:uuid', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_INVALID, STATUS_READY]), async (ctx) => {
   const ACTIONS = {};
   ACTIONS[STATUS_EMPTY] = ['edit', 'delete'];
   ACTIONS[STATUS_INVALID] = ['edit', 'delete'];
@@ -157,7 +157,14 @@ router.post('/crypts/:uuid/delete', getCrypt, async (ctx) => {
 /**
  * Show crypt content (and a preview warning if status <> sent)
  */
-router.get('/crypts/:uuid/read', getCrypt, (ctx) => {
+router.get('/crypts/:uuid/read', getCrypt, async (ctx) => {
+  if (ctx.crypt.status == STATUS_SENT || ctx.crypt.status == STATUS_READ) {
+    await logCryptEvent("Crypt read by recipient");
+    if (ctx.crypt.status === STATUS_SENT) {
+      await db('crypts').where('uuid', ctx.crypt.uuid).update('status', STATUS_READ);
+    }
+  }
+
   ctx.render('crypts/uuid/read.html', {
     title: `A message from ${ctx.crypt.from_name} to ${ctx.crypt.to_name}`,
   });
@@ -180,7 +187,7 @@ export default router;
 /**
  * Confirm the user is doing a-OK still
  */
-router.get('/crypts/:uuid/healthcheck', getCrypt, async (ctx) => {
+router.get('/crypts/:uuid/healthcheck', getCrypt, requireCryptStatus([STATUS_READY]), async (ctx) => {
   const crypt = ctx.crypt;
   const now = new Date();
   var firstDayOfTheMonth = new Date(now.getFullYear(), now.getMonth(), 1);
