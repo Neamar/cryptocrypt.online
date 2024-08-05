@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import { server } from '../index.js';
 import db from '../db.js';
 import { internalFetch, withCrypt } from '../testHelpers.js';
-import { STATUS_EMPTY, STATUS_READY, STATUS_SENT } from '../models/crypts.js';
+import { STATUS_EMPTY, STATUS_READ, STATUS_READY, STATUS_SENT } from '../models/crypts.js';
 
 const has404 = (endpoint) => {
   test("should return HTTP 404", async () => {
@@ -48,6 +48,27 @@ describe('GET /crypts/:uuid/', () => {
   }));
 });
 
+describe('GET /crypts/:uuid/read', () => {
+  has404(`/crypts/ca761232-ed42-11ce-bacd-00aa0057b223/read`);
+
+  test("should return HTTP 200", withCrypt(STATUS_READY, async (crypt, upToDateCrypt) => {
+    const r = await internalFetch(`/crypts/${crypt.uuid}/read`);
+    assert.strictEqual(r.status, 200);
+    assert.strictEqual((await upToDateCrypt()).status, crypt.status);
+    assert.equal((await upToDateCrypt()).read_at, undefined);
+  }));
+
+  test.only("should return HTTP 200 and mark READ when SENT", withCrypt(STATUS_SENT, async (crypt, upToDateCrypt) => {
+    const startDate = new Date();
+    const r = await internalFetch(`/crypts/${crypt.uuid}/read`);
+    console.log(await r.text());
+    assert.strictEqual(r.status, 200);
+    assert.strictEqual((await upToDateCrypt()).status, STATUS_READ);
+    assert.ok((await upToDateCrypt()).read_at > startDate);
+
+  }));
+});
+
 describe('GET /crypts/:uuid/delete', () => {
   has404(`/crypts/ca761232-ed42-11ce-bacd-00aa0057b223/delete`);
 
@@ -56,7 +77,6 @@ describe('GET /crypts/:uuid/delete', () => {
     assert.strictEqual(r.status, 200);
   }));
 });
-
 
 describe('GET /crypts/:uuid/healthcheck', () => {
   has404(`/crypts/ca761232-ed42-11ce-bacd-00aa0057b223/healthcheck`);

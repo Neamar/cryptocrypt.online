@@ -157,11 +157,11 @@ router.post('/crypts/:uuid/delete', getCrypt, async (ctx) => {
 /**
  * Show crypt content (and a preview warning if status <> sent)
  */
-router.get('/crypts/:uuid/read', getCrypt, async (ctx) => {
+router.get('/crypts/:uuid/read', getCrypt, requireCryptStatus([STATUS_READY, STATUS_SENT, STATUS_READ]), async (ctx) => {
   if (ctx.crypt.status == STATUS_SENT || ctx.crypt.status == STATUS_READ) {
     await logCryptEvent("Crypt read by recipient");
     if (ctx.crypt.status === STATUS_SENT) {
-      await db('crypts').where('uuid', ctx.crypt.uuid).update('status', STATUS_READ);
+      await db('crypts').where('uuid', ctx.crypt.uuid).update('status', STATUS_READ).update('read_at', new Date());
     }
   }
 
