@@ -26,7 +26,10 @@
     <meta name="theme-color" content="#ffffff" />
 
     <link rel="stylesheet" href="/css/main.css" nonce="{{ ctx.nonce }}" />
-    {% block head %} {% endblock %}
+
+    {% if not ctx.crypt %}
+    <script defer data-domain="cryptocrypt.online" src="https://t.neamar.fr/js/script.js" nonce="{{ ctx.nonce }}"></script>
+    {% endif %} {% block head %} {% endblock %}
   </head>
 
   <body>
