@@ -1,0 +1,84 @@
+{% set title = "Example uses of cryptocrypt" %} {% extends "template.html"%} {% block main %}
+
+<p>You'll find some sample use cases here, derived from real world scenarios. You can use them for inspiration.</p>
+<p>
+  You'll notice that the messages never include anything useful on its own if they were to fall in the wrong hands. <br />
+  That's the intended purpose: data stored online should not be enough to derive your key.
+</p>
+
+<h2>Paper backup for someone who knows about crypto</h2>
+<ul>
+  <li>The recipient knows about cryptocurrencies, and only needs the recovery passphrase.</li>
+</ul>
+
+<blockquote>
+  Dear <tt>redacted</tt>,<br />
+  If you receive this, I've been away for a long time.<br />
+  You know I have some cryptocurrency, as we've discussed this in the past. You'll need the codes to access those. In a black fabric pouch in my
+  nightstand, you'll find an orange paper with 24 words written in it. You can use those with any dedicated hardware (Trezor, or Ledger) to access the
+  funds.<br />
+  Love you,
+</blockquote>
+
+<h2>Partial paper backup for someone who knows about crypto</h2>
+<ul>
+  <li>The recipient knows about cryptocurrencies, and only needs the recovery passphrase.</li>
+  <li>
+    For safety, four words are not written on the paper, and are instead sent in the message.
+    <ul>
+      <li>
+        This is not a perfect failsafe. Someone finding the paper with the missing four words might still be able to bruteforce your wallet address.
+      </li>
+      <li>However, someone simply finding the four words would be unable to do anything with them.</li>
+    </ul>
+  </li>
+</ul>
+
+<blockquote>
+  Dear <tt>redacted</tt>,<br />
+  It's been good while it lasted... remember when we discussed Bitcoin? I've setup this message to be sent automatically after I pass away.<br />
+  In our holiday home, behind the washing machine, there's a plastified sheet with 20 seemingly random words.<br />
+  Here are the four missing ones: <tt>umbrella, hamster, you, easily</tt>. Add the missing ones in this order after the first 20, and you can use this
+  to reseed a wallet. If you're not sure of what you're doing, you can contact Christopher B. for help, I trust him.<br />
+  Please use the funds as you wish, and don't miss me too much, I'm gone already. Life is short, enjoy it.
+</blockquote>
+
+<h2>Custom wordlist for somone who knows about crypto</h2>
+<ul>
+  <li>The recipient knows about cryptocurrencies, and only needs the recovery passphrase.</li>
+  <li>The user tried to be "smart", and etched the words in metal with a custom algorithm</li>
+</ul>
+
+<blockquote>
+  [initial part redacted]<br />
+  I've etched into metal rings my words. Each word has its number associated.<br />
+  For all odd numbers, you actually need to use the word that comes <em>right before</em> in the bip-39 wordlist. If you don't do that, you'll get an
+  invalid wallet.<br />
+  [final part redacted]
+</blockquote>
+
+<h2>Paper backup for somone who doesn't know much about crypto</h2>
+<ul>
+  <li>
+    The recipient doesn't know about cryptocurrencies.
+    <ul>
+      <li>
+        This is not ideal. You should make sure the recipient at least knows that cryptocurrency exists, and that you have some. You don't want them
+        to think this looks like a Nigerian scam.
+      </li>
+    </ul>
+  </li>
+  <li>The user points them towards someone safe who can help</li>
+</ul>
+
+<blockquote>
+  [initial part redacted]<br />
+  I have a significant amount of money that wasn't stored within a bank, that my executor will not mention.<br />
+  If you don't do anything with it, it'll be lost forever.<br />
+  Instead, in the binder where I store my invoices, you'll find an envelope with "TREZOR" written on it. Bring this envelope to Brett, and show him
+  this message. He'll help you.<br />
+  [final part redacted]
+</blockquote>
+
+<p>You can find more writing advice on <a href="/writing">this page</a>.</p>
+{% endblock %}
