@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import { server } from '../index.js';
 import db from '../db.js';
 import { internalFetch, withCrypt } from '../testHelpers.js';
-import { STATUS_EMPTY, STATUS_READ, STATUS_READY, STATUS_SENT } from '../models/crypts.js';
+import { STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT } from '../models/crypts.js';
 
 const has404 = (endpoint) => {
   test("should return HTTP 404", async () => {
@@ -103,6 +103,69 @@ describe('POST /crypts/:uuid/delete', () => {
     const r = await internalFetch(`/crypts/${crypt.uuid}/delete`, { method: 'POST' });
     assert.strictEqual(r.status, 200);
     assert.equal(await upToDateCrypt(), undefined);
+  }));
+});
+
+describe('POST /crypts/:uuid/edit', () => {
+  test("should save sent data", withCrypt(STATUS_EMPTY, async (crypt, upToDateCrypt) => {
+    const r = await internalFetch(`/crypts/${crypt.uuid}/edit`, {
+      method: 'POST',
+      body: JSON.stringify({
+        from_mail: 'foo@bar.com',
+      }),
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+    });
+    assert.strictEqual(r.status, 200);
+    const updatedCrypt = await upToDateCrypt();
+    assert.equal(updatedCrypt.from_mail, 'foo@bar.com');
+    assert.equal(updatedCrypt.status, STATUS_INVALID);
+  }));
+
+  test("should escape sent data", withCrypt(STATUS_EMPTY, async (crypt, upToDateCrypt) => {
+    const r = await internalFetch(`/crypts/${crypt.uuid}/edit`, {
+      method: 'POST',
+      body: JSON.stringify({
+        message: '<p>',
+      }),
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+    });
+    assert.strictEqual(r.status, 200);
+    const updatedCrypt = await upToDateCrypt();
+    assert.equal(updatedCrypt.message, '&lt;p&gt;');
+    assert.equal(updatedCrypt.status, STATUS_INVALID);
+  }));
+
+  test("should set status to VALID with correct payload", withCrypt(STATUS_EMPTY, async (crypt, upToDateCrypt) => {
+    const payload = {
+      from_name: 'From',
+      from_mail: 'from@cryptocrypt.online',
+      to_name: 'To',
+      to_mail: 'to@cryptocrypt.online',
+      message: 'message',
+    };
+
+    const r = await internalFetch(`/crypts/${crypt.uuid}/edit`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+    });
+    assert.strictEqual(r.status, 200);
+    const updatedCrypt = await upToDateCrypt();
+    // Everything saved
+    Object.entries(payload).forEach(([key, value]) => {
+      assert.equal(updatedCrypt[key], value);
+    });
+    // Status updated
+    assert.equal(updatedCrypt.status, STATUS_READY);
   }));
 });
 
