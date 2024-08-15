@@ -58,10 +58,9 @@ describe('GET /crypts/:uuid/read', () => {
     assert.equal((await upToDateCrypt()).read_at, undefined);
   }));
 
-  test.only("should return HTTP 200 and mark READ when SENT", withCrypt(STATUS_SENT, async (crypt, upToDateCrypt) => {
+  test("should return HTTP 200 and mark READ when SENT", withCrypt(STATUS_SENT, async (crypt, upToDateCrypt) => {
     const startDate = new Date();
     const r = await internalFetch(`/crypts/${crypt.uuid}/read`);
-    console.log(await r.text());
     assert.strictEqual(r.status, 200);
     assert.strictEqual((await upToDateCrypt()).status, STATUS_READ);
     assert.ok((await upToDateCrypt()).read_at > startDate);
