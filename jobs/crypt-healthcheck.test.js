@@ -2,7 +2,7 @@ import test, { after, describe } from 'node:test';
 import assert from 'node:assert';
 import cryptHealthcheck from './crypt-healthcheck.js';
 import db from '../db.js';
-import { STATUS_INVALID, STATUS_READY } from '../models/crypts.js';
+import { STATUS_INVALID, STATUS_READY } from '../models/crypt.js';
 import { withCrypt } from '../testHelpers.js';
 
 describe('Job: crypt-healtcheck', async () => {

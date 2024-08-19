@@ -3,7 +3,7 @@ import emailValidator from 'email-validator';
 import { randomUUID } from 'crypto';
 import { readFileSync } from 'fs';
 import db from '../db.js';
-import { logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT, } from '../models/crypts.js';
+import { logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT, } from '../models/crypt.js';
 import { getCrypt, requireCryptStatus } from '../middlewares/crypt.js';
 import { NotFound } from 'fejl';
 const router = new Router();
@@ -115,7 +115,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, ST
 /**
  * Crypt main page
  */
-router.get('/crypts/:uuid', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_INVALID, STATUS_READY]), async (ctx) => {
+router.get('/crypts/:uuid', getCrypt, async (ctx) => {
   const ACTIONS = {};
   ACTIONS[STATUS_EMPTY] = ['edit', 'delete'];
   ACTIONS[STATUS_INVALID] = ['edit', 'delete'];

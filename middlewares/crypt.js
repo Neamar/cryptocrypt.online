@@ -1,5 +1,5 @@
 import db from '../db.js';
-import { BadRequest, NotFound } from 'fejl';
+import { NotFound } from 'fejl';
 
 export const getCrypt = async (ctx, next) => {
   // Retrieve the crypt, except encrypted message.
@@ -14,8 +14,12 @@ export const getCrypt = async (ctx, next) => {
 
 export const requireCryptStatus = (statuses) => {
   return async (ctx, next) => {
-    BadRequest.assert(statuses.indexOf(ctx.crypt.status) !== -1, 'This action is not available for this crypt.');
-
-    return next();
+    if (!statuses.includes(ctx.crypt.status)) {
+      ctx.setToast('This action is not available for this crypt, redirecting to crypt main page.');
+      ctx.redirect(`/crypts/${ctx.crypt.uuid}`);
+    }
+    else {
+      return next();
+    }
   };
 };

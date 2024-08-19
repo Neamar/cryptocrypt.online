@@ -2,7 +2,7 @@ import pMap from 'p-map';
 import db from '../db.js';
 import jobLogger from './helpers/logger.js';
 import { sendEmail } from '../helpers/mail.js';
-import { STATUS_READY } from '../models/crypts.js';
+import { STATUS_READY } from '../models/crypt.js';
 
 const logger = jobLogger.child({ job: 'healthcheck' });
 

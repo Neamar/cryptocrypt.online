@@ -1,6 +1,5 @@
 import Koa from 'koa';
 import koaStatic from 'koa-static';
-import koaRatelimit from 'koa-ratelimit';
 import koaFormidable from 'koa2-formidable';
 import koaBunyanLogger from 'koa-bunyan-logger';
 
@@ -10,8 +9,8 @@ import { readToast } from './middlewares/toast.js';
 import { addTemplate } from './middlewares/template.js';
 import { bodyParser } from '@koa/bodyparser';
 import { addCSP } from './middlewares/csp.js';
-import { isTest } from './helpers/env.js';
 import { webLogger } from './jobs/helpers/logger.js';
+import { rateLimitCrypts } from './middlewares/rate-limit.js';
 
 export const app = new Koa();
 
@@ -21,19 +20,7 @@ app
   // automatically log requests
   .use(koaBunyanLogger.requestLogger())
   // rate limit access to /crypts/* endpoint
-  .use(koaRatelimit({
-    driver: 'memory',
-    db: new Map(),
-    duration: 10000,
-    errorMessage: 'Wow, easy with the refresh champ!',
-    id: (ctx) => ctx.ip,
-    max: 10,
-    disableHeader: true,
-    whitelist: (ctx) => {
-      // Only rate limit the /crypts endpoints (which include crypts creation)
-      return isTest || !ctx.request.path.startsWith('/crypts');
-    },
-  }))
+  .use(rateLimitCrypts)
   // Add Content Security Policy headers
   .use(addCSP)
   // parse file data in <form>

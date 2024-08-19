@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import { server } from '../index.js';
 import db from '../db.js';
 import { internalFetch, withCrypt } from '../testHelpers.js';
-import { STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT } from '../models/crypts.js';
+import { STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
 
 const has404 = (endpoint) => {
   test("should return HTTP 404", async () => {

@@ -2,7 +2,7 @@ import test, { after, describe } from 'node:test';
 import assert from 'node:assert';
 import cryptRelease from './crypt-release.js';
 import db from '../db.js';
-import { STATUS_INVALID, STATUS_READY, STATUS_SENT } from '../models/crypts.js';
+import { STATUS_INVALID, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
 import { withCrypt } from '../testHelpers.js';
 
 
