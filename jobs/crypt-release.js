@@ -2,7 +2,7 @@ import pMap from 'p-map';
 import db from '../db.js';
 import jobLogger from './helpers/logger.js';
 import { sendEmail } from '../helpers/mail.js';
-import { STATUS_READY, STATUS_SENT } from '../models/crypt.js';
+import { cryptLink, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
 
 const logger = jobLogger.child({ job: 'healthcheck' });
 
@@ -18,7 +18,7 @@ export default async function main() {
   logger.info("Releasing crypts", { crypts: cryptsToNotify.map(c => c.uuid) });
 
   await pMap(cryptsToNotify, async (crypt) => {
-    const link = `${process.env.SELF_URL}/crypts/${crypt.uuid}/healthcheck`;
+    const link = `${process.env.SELF_URL}${cryptLink(crypt, 'healthcheck')}`;
 
     const email = {
       from: {

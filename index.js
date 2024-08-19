@@ -18,7 +18,14 @@ app
   // gives access to ctx.log.info
   .use(koaBunyanLogger(webLogger))
   // automatically log requests
-  .use(koaBunyanLogger.requestLogger())
+  .use(koaBunyanLogger.requestLogger({
+    updateLogFields: (requestData) => {
+      requestData.req = undefined;
+      // @ts-ignore
+      requestData.res = undefined;
+      return requestData;
+    }
+  }))
   // rate limit access to /crypts/* endpoint
   .use(rateLimitCrypts)
   // Add Content Security Policy headers

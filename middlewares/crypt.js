@@ -1,5 +1,6 @@
 import db from '../db.js';
 import { NotFound } from 'fejl';
+import { cryptLink } from '../models/crypt.js';
 
 export const getCrypt = async (ctx, next) => {
   // Retrieve the crypt, except encrypted message.
@@ -12,11 +13,16 @@ export const getCrypt = async (ctx, next) => {
   return next();
 };
 
+/**
+ *
+ * @param {("empty"|"invalid"|"ready"|"sent"|"read")[]} statuses
+ * @returns Function
+ */
 export const requireCryptStatus = (statuses) => {
   return async (ctx, next) => {
     if (!statuses.includes(ctx.crypt.status)) {
       ctx.setToast('This action is not available for this crypt, redirecting to crypt main page.');
-      ctx.redirect(`/crypts/${ctx.crypt.uuid}`);
+      ctx.redirect(cryptLink(ctx.crypt, ''));
     }
     else {
       return next();

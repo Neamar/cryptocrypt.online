@@ -3,9 +3,10 @@ import emailValidator from 'email-validator';
 import { randomUUID } from 'crypto';
 import { readFileSync } from 'fs';
 import db from '../db.js';
-import { logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT, } from '../models/crypt.js';
+import { cryptLink, getCryptHash, logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT, validateCryptHash, } from '../models/crypt.js';
 import { getCrypt, requireCryptStatus } from '../middlewares/crypt.js';
 import { NotFound } from 'fejl';
+import { sendEmail } from '../helpers/mail.js';
 const router = new Router();
 
 
@@ -43,6 +44,83 @@ router.get('/crypts/:uuid/warnings', getCrypt, requireCryptStatus([STATUS_EMPTY,
 
 
 /**
+ * Collect crypt owner email, and send verification email
+ */
+router.get('/crypts/:uuid/verify', getCrypt, requireCryptStatus([STATUS_INVALID]), (ctx) => {
+  ctx.render('crypts/uuid/verify.html', { title: "Verify your email address" });
+});
+
+/**
+ * Display warnings about crypt usage
+ */
+router.post('/crypts/:uuid/verify', getCrypt, requireCryptStatus([STATUS_INVALID]), async (ctx) => {
+  const mail = ctx.request.body.from_mail;
+  if (!mail || !emailValidator.validate(mail)) {
+    ctx.setToast("Invalid email adress, please double-check your input and try again.");
+    ctx.redirect(cryptLink(ctx.crypt, 'verify'));
+    return;
+  }
+
+  await db.transaction(async (trx) => {
+    await db('crypts').update({
+      from_mail: mail,
+      updated_at: new Date(),
+    }).where('uuid', ctx.crypt.uuid);
+    await logCryptEvent(ctx.crypt.uuid, 'Crypt owner email updated', ctx, trx);
+  });
+
+  const hash = getCryptHash(ctx.crypt, 'verify-email', mail, Date.now() + 1000 * 60 * 60 * 24);
+  const link = `${cryptLink(ctx.crypt, 'verify-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`;
+  const email = {
+    from: {
+      name: `Cryptocrypt`,
+      email: 'contact@cryptocrypt.online',
+    },
+    to: mail,
+    subject: `A new crypt was created for your email address`,
+    html: `
+<p>Hi,<br>
+A user made a new crypt using your email address. Please <a href="${link}">click this link to confirm you requested that action</a>.</p>
+<p>If you were not responsible for this request, you can safely ignore this message.</p>`,
+  };
+
+  await sendEmail(email);
+
+  ctx.setToast(`We've sent an email to ${mail}. Please click on the included link and continue from there, or refresh this page.`);
+  ctx.redirect(cryptLink(ctx.crypt, ''));
+});
+
+
+/**
+ * Verify email address. a GET request that has side effects.
+ */
+router.get('/crypts/:uuid/verify-from-email', getCrypt, requireCryptStatus([STATUS_INVALID]), async (ctx) => {
+  const hash = ctx.request.query.hash;
+  const validUntil = ctx.request.query.validUntil;
+  const valid = validateCryptHash(ctx.crypt, 'verify-email', ctx.crypt.from_mail, hash, validUntil);
+
+  if (valid) {
+    await db.transaction(async (trx) => {
+      await db('crypts').update({
+        from_mail: ctx.crypt.from_mail, // protect against potential race condition if you click on two emails validation links at the same time
+        status: STATUS_EMPTY,
+        updated_at: new Date(),
+      }).where('uuid', ctx.crypt.uuid);
+      await logCryptEvent(ctx.crypt.uuid, 'Crypt owner email updated', ctx, trx);
+    });
+
+    ctx.setToast("Email address verified.");
+    ctx.redirect(cryptLink(ctx.crypt, 'edit'));
+    return;
+  }
+  else {
+    ctx.setToast("Invalid or expired email link. Please try again.");
+    ctx.redirect(cryptLink(ctx.crypt, 'verify'));
+  }
+});
+
+
+/**
  * Show form to edit the crypt
  */
 router.get('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_READY]), (ctx) => {
@@ -54,7 +132,7 @@ router.get('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STA
  * Save crypt changes
  */
 router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_READY]), async (ctx) => {
-  const fields = ['from_name', 'from_mail', 'to_name', 'to_mail', 'message'];
+  const fields = ['from_name', 'to_name', 'to_mail', 'message'];
 
   const escapeHtml = (unsafe) => {
     return unsafe.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');
@@ -62,7 +140,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, ST
 
   const payload = Object.fromEntries(fields.map(f => [f, escapeHtml(ctx.request.body[f] || '').trim()]));
 
-  const validEmails = ['from_mail', 'to_mail'].every(field => emailValidator.validate(payload[field]));
+  const validEmails = emailValidator.validate(payload.to_mail);
   const validMessage = !!payload['message'];
   const validNames = !!payload['from_name'] && !!payload['to_name'];
 
@@ -79,7 +157,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, ST
   if (ctx?.request?.files?.encrypted_message && ctx.request.files.encrypted_message.size > 0) {
     if (ctx.request.files.encrypted_message.size >= 100000) {
       ctx.setToast(`The file you included is too large, you should include encrypted text, not images!`, 'error');
-      ctx.redirect(`/crypts/${ctx.crypt.uuid}/edit`);
+      ctx.redirect(cryptLink(ctx.crypt, 'edit'));
       return;
     }
 
@@ -98,7 +176,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, ST
 
   if (payload['status'] === STATUS_READY) {
     ctx.setToast("Your crypt was saved.");
-    ctx.redirect(`/crypts/${ctx.crypt.uuid}`);
+    ctx.redirect(cryptLink(ctx.crypt, ''));
   }
   else {
     const invalid = [];
@@ -107,7 +185,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, ST
     !validNames && invalid.push("missing names");
 
     ctx.setToast(`Your crypt was saved, but some information is still missing: ${invalid.join(', ')}`, 'warn');
-    ctx.redirect(`/crypts/${ctx.crypt.uuid}/edit`);
+    ctx.redirect(cryptLink(ctx.crypt, 'edit'));
   }
 });
 
@@ -117,8 +195,8 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, ST
  */
 router.get('/crypts/:uuid', getCrypt, async (ctx) => {
   const ACTIONS = {};
+  ACTIONS[STATUS_INVALID] = ['verify'];
   ACTIONS[STATUS_EMPTY] = ['edit', 'delete'];
-  ACTIONS[STATUS_INVALID] = ['edit', 'delete'];
   ACTIONS[STATUS_READY] = ['preview', 'edit', 'delete'];
   ACTIONS[STATUS_SENT] = ['delete'];
 
