@@ -24,7 +24,7 @@ router.post('/crypts/create', async (ctx) => {
       created_at: now,
       updated_at: now,
       refreshed_at: now,
-      status: STATUS_EMPTY
+      status: STATUS_INVALID
     });
     await logCryptEvent(cryptUuid, 'Crypt created', ctx, trx);
   });
@@ -45,7 +45,7 @@ router.get('/crypts/:uuid/warnings', getCrypt, requireCryptStatus([STATUS_EMPTY,
 /**
  * Show form to edit the crypt
  */
-router.get('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_INVALID, STATUS_READY]), (ctx) => {
+router.get('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_READY]), (ctx) => {
   ctx.render('crypts/uuid/edit.html', { title: "Edit your crypt" });
 });
 
@@ -53,7 +53,7 @@ router.get('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STA
 /**
  * Save crypt changes
  */
-router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_INVALID, STATUS_READY]), async (ctx) => {
+router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_READY]), async (ctx) => {
   const fields = ['from_name', 'from_mail', 'to_name', 'to_mail', 'message'];
 
   const escapeHtml = (unsafe) => {
@@ -66,7 +66,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, ST
   const validMessage = !!payload['message'];
   const validNames = !!payload['from_name'] && !!payload['to_name'];
 
-  payload['status'] = validEmails && validMessage && validNames ? STATUS_READY : STATUS_INVALID;
+  payload['status'] = validEmails && validMessage && validNames ? STATUS_READY : STATUS_EMPTY;
 
   await db.transaction(async (trx) => {
     await db('crypts').update({
