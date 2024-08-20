@@ -1,4 +1,6 @@
 {% extends "template.html"%} {% block main %} {% if crypt.status === STATUS_INVALID %}
+<p class="info">You'll need to verify your email address to edit this crypt. Please check your email.</p>
+{% elif crypt.status === STATUS_EMPTY %}
 <p class="info">This crypt is currently invalid, and needs <a href="/crypts/{{ crypt.uuid}}/edit">to be edited</a> and fixed.</p>
 {% elif crypt.status === STATUS_READY %}
 <p class="info">This crypt is valid. You'll be contacted every month to check on your status.</p>
@@ -11,6 +13,8 @@
   <li><a href="/crypts/{{ crypt.uuid }}/edit">Edit this crypt</a></li>
   {% elif action == "preview" %}
   <li><a href="/crypts/{{ crypt.uuid }}/read?preview">Preview this crypt</a></li>
+  {% elif action == "verify" %}
+  <li><a href="/crypts/{{ crypt.uuid }}/verify">Verify your email again</a></li>
   {% elif action == "delete" %}
   <li><a href="/crypts/{{ crypt.uuid }}/delete">Delete this crypt forever</a></li>
   {% endif %} {% endfor %}
@@ -27,9 +31,7 @@
     {% for event in events %}
     <tr>
       <td>
-        <script>
-          document.write(new Date('{{ event.created_at }}').toLocaleString());
-        </script>
+        <time datetime="{{ event.created_at.toISOString()}}">{{ event.created_at }}</time>
       </td>
       <td>{{ event.event }}</td>
     </tr>

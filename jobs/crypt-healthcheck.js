@@ -2,7 +2,7 @@ import pMap from 'p-map';
 import db from '../db.js';
 import jobLogger from './helpers/logger.js';
 import { sendEmail } from '../helpers/mail.js';
-import { STATUS_READY } from '../models/crypt.js';
+import { cryptLink, STATUS_READY } from '../models/crypt.js';
 
 const logger = jobLogger.child({ job: 'healthcheck' });
 
@@ -66,8 +66,8 @@ export default async function main() {
 
   await pMap(cryptsToNotify, async (crypt) => {
     const template = contactTemplates[Math.min(crypt.times_contacted, contactTemplates.length - 1)];
-    const link = `${process.env.SELF_URL}/crypts/${crypt.uuid}/healthcheck`;
-    const footerInfo = `<hr /><p><small>If you want to review your crypt content, <a href="${process.env.SELF_URL}/crypts/${crypt.uuid}/">visit here</a>.</small></p>`;
+    const link = `${process.env.SELF_URL}${cryptLink(crypt, 'healthcheck')}`;
+    const footerInfo = `<hr /><p><small>If you want to review your crypt content, <a href="${process.env.SELF_URL}${cryptLink(crypt, '')}">visit here</a>.</small></p>`;
 
     const email = {
       from: {

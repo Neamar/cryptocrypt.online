@@ -23,15 +23,9 @@
 
 <p>
   <small>
-    <script nonce="{{ ctx.nonce }}">
-      const createdAt = new Date('{{crypt.created_at }}').toLocaleDateString();
-      const updatedAt = new Date('{{crypt.updated_at }}').toLocaleDateString();
-      const refreshedAt = new Date('{{crypt.refreshed_at }}').toLocaleDateString();
-
-      document.write(
-        `Message created on ${createdAt}, last updated on ${updatedAt}.<br />{{ crypt.from_name }} was successfully contacted last on ${refreshedAt}.`,
-      );
-    </script>
+    Message created on <time datetime="{{crypt.created_at.toISOString() }}">{{crypt.created_at }}</time>, last updated on
+    <time datetime="{{crypt.updated_at.toISOString() }}">{{crypt.updated_at }}</time>.<br />
+    {{ crypt.from_name }} was successfully contacted last on <time datetime="{{crypt.refreshed_at.toISOString() }}">{{crypt.refreshed_at }}</time>.
   </small>
 </p>
 {% endblock %}
