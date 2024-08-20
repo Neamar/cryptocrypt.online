@@ -107,7 +107,7 @@ describe('POST /crypts/:uuid/delete', () => {
 });
 
 describe('POST /crypts/:uuid/edit', () => {
-  test("should save sent data", withCrypt(STATUS_EMPTY, async (crypt, upToDateCrypt) => {
+  test("should not save from_mail", withCrypt(STATUS_EMPTY, async (crypt, upToDateCrypt) => {
     const r = await internalFetch(`/crypts/${crypt.uuid}/edit`, {
       method: 'POST',
       body: JSON.stringify({
@@ -120,8 +120,25 @@ describe('POST /crypts/:uuid/edit', () => {
     });
     assert.strictEqual(r.status, 200);
     const updatedCrypt = await upToDateCrypt();
-    assert.equal(updatedCrypt.from_mail, 'foo@bar.com');
-    assert.equal(updatedCrypt.status, STATUS_INVALID);
+    assert.notEqual(updatedCrypt.from_mail, 'foo@bar.com');
+    assert.equal(updatedCrypt.status, STATUS_EMPTY);
+  }));
+
+  test("should save sent data", withCrypt(STATUS_EMPTY, async (crypt, upToDateCrypt) => {
+    const r = await internalFetch(`/crypts/${crypt.uuid}/edit`, {
+      method: 'POST',
+      body: JSON.stringify({
+        from_name: 'Testing McTestFace',
+      }),
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+    });
+    assert.strictEqual(r.status, 200);
+    const updatedCrypt = await upToDateCrypt();
+    assert.equal(updatedCrypt.from_name, 'Testing McTestFace');
+    assert.equal(updatedCrypt.status, STATUS_EMPTY);
   }));
 
   test("should escape sent data", withCrypt(STATUS_EMPTY, async (crypt, upToDateCrypt) => {
@@ -138,13 +155,12 @@ describe('POST /crypts/:uuid/edit', () => {
     assert.strictEqual(r.status, 200);
     const updatedCrypt = await upToDateCrypt();
     assert.equal(updatedCrypt.message, '&lt;p&gt;');
-    assert.equal(updatedCrypt.status, STATUS_INVALID);
+    assert.equal(updatedCrypt.status, STATUS_EMPTY);
   }));
 
   test("should set status to VALID with correct payload", withCrypt(STATUS_EMPTY, async (crypt, upToDateCrypt) => {
     const payload = {
       from_name: 'From',
-      from_mail: 'from@cryptocrypt.online',
       to_name: 'To',
       to_mail: 'to@cryptocrypt.online',
       message: 'message',

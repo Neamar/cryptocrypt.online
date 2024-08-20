@@ -106,7 +106,7 @@ router.get('/crypts/:uuid/verify-from-email', getCrypt, requireCryptStatus([STAT
         status: STATUS_EMPTY,
         updated_at: new Date(),
       }).where('uuid', ctx.crypt.uuid);
-      await logCryptEvent(ctx.crypt.uuid, 'Crypt owner email updated', ctx, trx);
+      await logCryptEvent(ctx.crypt.uuid, 'Crypt owner email verified', ctx, trx);
     });
 
     ctx.setToast("Email address verified.");

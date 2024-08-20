@@ -31,9 +31,7 @@
     {% for event in events %}
     <tr>
       <td>
-        <script>
-          document.write(new Date('{{ event.created_at }}').toLocaleString());
-        </script>
+        <time datetime="{{ event.created_at.toISOString()}}">{{ event.created_at }}</time>
       </td>
       <td>{{ event.event }}</td>
     </tr>

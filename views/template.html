@@ -36,5 +36,12 @@
     {% if ctx.toast %}
     <p>{{ ctx.toast}}</p>
     {% endif %} {% block main %} {% endblock %}
+
+    <script nonce="{{ ctx.nonce }}">
+      [...document.querySelectorAll('time')].forEach((e) => {
+        e.textContent = new Date(e.dateTime).toLocaleDateString();
+        e.title = new Date(e.dateTime).toISOString();
+      });
+    </script>
   </body>
 </html>
