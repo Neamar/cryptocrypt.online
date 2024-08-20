@@ -11,6 +11,7 @@ import { bodyParser } from '@koa/bodyparser';
 import { addCSP } from './middlewares/csp.js';
 import { webLogger } from './jobs/helpers/logger.js';
 import { rateLimitCrypts } from './middlewares/rate-limit.js';
+import { addRequestLogs } from './middlewares/logs.js';
 
 export const app = new Koa();
 
@@ -18,14 +19,7 @@ app
   // gives access to ctx.log.info
   .use(koaBunyanLogger(webLogger))
   // automatically log requests
-  .use(koaBunyanLogger.requestLogger({
-    updateLogFields: (requestData) => {
-      requestData.req = undefined;
-      // @ts-ignore
-      requestData.res = undefined;
-      return requestData;
-    }
-  }))
+  .use(addRequestLogs)
   // rate limit access to /crypts/* endpoint
   .use(rateLimitCrypts)
   // Add Content Security Policy headers
