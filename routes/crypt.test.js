@@ -3,7 +3,8 @@ import assert from 'node:assert';
 import { server } from '../index.js';
 import db from '../db.js';
 import { internalFetch, withCrypt } from '../testHelpers.js';
-import { STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
+import { cryptLink, getCryptHash, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
+import { lastMail } from '../helpers/mail.js';
 
 const has404 = (endpoint) => {
   test("should return HTTP 404", async () => {
@@ -27,6 +28,76 @@ describe('GET /crypts/:uuid/warnings', () => {
   test("should return HTTP 200", withCrypt(STATUS_EMPTY, async (crypt) => {
     const r = await internalFetch(`/crypts/${crypt.uuid}/warnings`);
     assert.strictEqual(r.status, 200);
+  }));
+});
+
+describe('GET /crypts/:uuid/verify', () => {
+  has404(`/crypts/ca761232-ed42-11ce-bacd-00aa0057b223/verify`);
+
+  test("should return HTTP 200", withCrypt(STATUS_INVALID, async (crypt) => {
+    const r = await internalFetch(`/crypts/${crypt.uuid}/verify`);
+    assert.strictEqual(r.status, 200);
+  }));
+
+  test("should send an email, and email should include validation", withCrypt(STATUS_INVALID, async (crypt, upToDateCrypt) => {
+    const r = await internalFetch(`/crypts/${crypt.uuid}/verify`, {
+      method: 'POST',
+      body: JSON.stringify({
+        from_mail: 'foo@bar.com',
+      }),
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+    });
+    assert.strictEqual(r.status, 200);
+    assert.strictEqual(lastMail.to, 'foo@bar.com');
+    const link = lastMail.html.match(`(/crypts/${crypt.uuid}/verify-from-email.+?)"`);
+    assert(link, "No valid link found");
+
+    let updatedCrypt = await upToDateCrypt();
+    assert(updatedCrypt.status, STATUS_INVALID);
+    assert(updatedCrypt.from_mail, 'foo@bar.com');
+    assert(link[1].includes('?hash='), 'Missing hash value');
+    assert(link[1].includes('&validUntil='), 'Missing validUntil value');
+  }));
+});
+
+describe('GET /crypts/:uuid/verify-from-email', () => {
+  has404(`/crypts/ca761232-ed42-11ce-bacd-00aa0057b223/verify-from-email`);
+
+  test("should fail validation with invalid code", withCrypt(STATUS_INVALID, { from_mail: 'foo@bar.com' }, async (crypt, upToDateCrypt) => {
+    const r = await internalFetch(cryptLink(crypt, 'verify-from-email'));
+
+    assert.strictEqual(r.status, 200);
+    assert((await upToDateCrypt()).status, STATUS_INVALID);
+    assert(r.url.includes('/verify'), 'Invalid code should redirect');
+  }));
+
+  test("should fail validation with invalid code", withCrypt(STATUS_INVALID, { from_mail: 'foo@bar.com' }, async (crypt, upToDateCrypt) => {
+    const r = await internalFetch(`${cryptLink(crypt, 'verify-from-email')}?hash=abc`);
+
+    assert.strictEqual(r.status, 200);
+    assert((await upToDateCrypt()).status, STATUS_INVALID);
+    assert(r.url.includes('/verify'), 'Invalid code should redirect');
+  }));
+
+  test("should fail validation with invalid code", withCrypt(STATUS_INVALID, { from_mail: 'foo@bar.com' }, async (crypt, upToDateCrypt) => {
+    const hash = getCryptHash(crypt, 'verify-email', 'foo@bar.com', Date.now() + 10000);
+    const r = await internalFetch(`${cryptLink(crypt, 'verify-from-email')}?hash=${hash.hash}&validUntil=123`);
+
+    assert.strictEqual(r.status, 200);
+    assert((await upToDateCrypt()).status, STATUS_INVALID);
+    assert(r.url.includes('/verify'), 'Invalid code should redirect');
+  }));
+
+  test("should succeed with valid code", withCrypt(STATUS_INVALID, { from_mail: 'foo@bar.com' }, async (crypt, upToDateCrypt) => {
+    const hash = getCryptHash(crypt, 'verify-email', 'foo@bar.com', Date.now() + 10000);
+    const r = await internalFetch(`${cryptLink(crypt, 'verify-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`);
+
+    assert.strictEqual(r.status, 200);
+    assert((await upToDateCrypt()).status, STATUS_EMPTY);
+    assert(r.url.includes('/edit'), 'Invalid code should redirect');
   }));
 });
 
@@ -89,11 +160,12 @@ describe('GET /crypts/:uuid/healthcheck', () => {
     assert.ok((await upToDateCrypt()).refreshed_at > startDate);
   }));
 
-  test("should return HTTP 400 for a crypt that was sent", withCrypt(STATUS_SENT, {
+  test("should redirect for a crypt that was sent", withCrypt(STATUS_SENT, {
     refreshed_at: new Date(0)
   }, async (crypt, upToDateCrypt) => {
     const r = await internalFetch(`/crypts/${crypt.uuid}/healthcheck`);
-    assert.strictEqual(r.status, 400);
+    assert.strictEqual(r.status, 200);
+    assert(r.redirected, 'Request should have redirected');
     assert.strictEqual((await upToDateCrypt()).refreshed_at.toISOString(), crypt.refreshed_at.toISOString());
   }));
 });
@@ -184,6 +256,60 @@ describe('POST /crypts/:uuid/edit', () => {
     assert.equal(updatedCrypt.status, STATUS_READY);
   }));
 });
+
+describe("Test happy path", () => {
+  test("should allow crypt edition end to end", withCrypt(STATUS_INVALID, async (crypt, upToDateCrypt) => {
+    // Verify email
+    let r = await internalFetch(`/crypts/${crypt.uuid}/verify`, {
+      method: 'POST',
+      body: JSON.stringify({
+        from_mail: 'foo@bar.com',
+      }),
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+    });
+    assert.strictEqual(r.status, 200);
+    assert.strictEqual(lastMail.to, 'foo@bar.com');
+
+    // Click on mail link
+    const link = lastMail.html.match(`(/crypts/${crypt.uuid}/.+?)"`);
+    assert(link, "No valid link found");
+
+    let updatedCrypt = await upToDateCrypt();
+    assert(updatedCrypt.status, STATUS_INVALID);
+    assert(updatedCrypt.from_mail, 'foo@bar.com');
+
+    r = await internalFetch(link[1]);
+
+    assert.strictEqual(r.status, 200);
+    updatedCrypt = await upToDateCrypt();
+    assert(updatedCrypt.status, STATUS_EMPTY);
+    assert(updatedCrypt.from_mail, 'foo@bar.com');
+
+    // Edit content
+    r = await internalFetch(`/crypts/${crypt.uuid}/edit`, {
+      method: 'POST',
+      body: JSON.stringify({
+        from_name: 'Foo',
+        to_name: 'Them',
+        to_mail: 'them@isp.com',
+        message: 'I love you'
+      }),
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+    });
+    assert.strictEqual(r.status, 200);
+    updatedCrypt = await upToDateCrypt();
+    assert(updatedCrypt.status, STATUS_READY);
+    assert(updatedCrypt.message, 'I love you');
+  }));
+
+});
+
 
 after(() => db.destroy());
 after(() => server.close());

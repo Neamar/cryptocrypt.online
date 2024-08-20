@@ -70,7 +70,7 @@ router.post('/crypts/:uuid/verify', getCrypt, requireCryptStatus([STATUS_INVALID
   });
 
   const hash = getCryptHash(ctx.crypt, 'verify-email', mail, Date.now() + 1000 * 60 * 60 * 24);
-  const link = `${cryptLink(ctx.crypt, 'verify-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`;
+  const link = `${process.env.SELF_URL}${cryptLink(ctx.crypt, 'verify-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`;
   const email = {
     from: {
       name: `Cryptocrypt`,
