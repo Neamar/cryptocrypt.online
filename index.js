@@ -12,6 +12,7 @@ import { addCSP } from './middlewares/csp.js';
 import { webLogger } from './jobs/helpers/logger.js';
 import { rateLimitCrypts } from './middlewares/rate-limit.js';
 import { addRequestLogs } from './middlewares/logs.js';
+import { handle404 } from './middlewares/404.js';
 
 export const app = new Koa();
 
@@ -22,6 +23,8 @@ app
   .use(addRequestLogs)
   // rate limit access to /crypts/* endpoint
   .use(rateLimitCrypts)
+  // Handle 404
+  .use(handle404)
   // Add Content Security Policy headers
   .use(addCSP)
   // parse file data in <form>
