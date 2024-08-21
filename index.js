@@ -42,6 +42,6 @@ app
   .use(cryptRoutes.routes())
   .use(cryptRoutes.allowedMethods())
   // serve static files (favicon, manifest, ...)
-  .use(koaStatic('static'));
+  .use(koaStatic('static', { maxAge: 1000 * 60 * 60 * 24 }));
 
 export const server = app.listen(process.env.PORT || 3000);
