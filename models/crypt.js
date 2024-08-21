@@ -10,7 +10,7 @@ export const STATUS_EMPTY = 'empty';
 export const STATUS_READY = 'ready';
 // This crypt was sent to the intended recipient
 export const STATUS_SENT = 'sent';
-// This crypts was read by the intended recipient
+// This crypt was read by the intended recipient
 export const STATUS_READ = 'read';
 
 export const logCryptEvent = async (cryptUuid, event, ctx, trx = db) => {

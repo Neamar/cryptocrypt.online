@@ -224,7 +224,7 @@ router.get('/crypts/:uuid/delete', getCrypt, (ctx) => {
  * Crypt delete page
  */
 router.post('/crypts/:uuid/delete', getCrypt, async (ctx) => {
-  await db('crypts').delete('uuid', ctx.crypt.uuid);
+  await db('crypts').where('uuid', ctx.crypt.uuid).delete();
 
   ctx.render('crypts/uuid/deleted.html', {
     title: 'Crypt deleted',
