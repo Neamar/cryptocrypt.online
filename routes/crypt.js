@@ -75,7 +75,7 @@ router.post('/crypts/:uuid/verify', getCrypt, requireCryptStatus([STATUS_INVALID
   const email = {
     from: {
       name: `Cryptocrypt`,
-      email: 'contact@cryptocrypt.online',
+      email: `contact@${process.env.SELF_URL}`,
     },
     to: mail,
     subject: template.subject,

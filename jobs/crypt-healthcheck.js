@@ -23,7 +23,7 @@ export default async function main() {
     const email = {
       from: {
         name: 'Cryptocrypt healthcheck',
-        email: 'healthcheck@cryptocrypt.online',
+        email: `healthcheck@${process.env.SELF_URL}`,
       },
       to: {
         name: crypt.from_name,

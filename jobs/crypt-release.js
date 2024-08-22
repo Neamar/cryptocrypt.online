@@ -24,7 +24,7 @@ export default async function main() {
     const email = {
       from: {
         name: `${crypt.from_name} delayed message`,
-        email: 'contact@cryptocrypt.online',
+        email: `contact@${process.env.SELF_URL}`,
       },
       to: {
         name: crypt.to_name,
