@@ -24,7 +24,7 @@
   },
   "env": {
     "SELF_URL": {
-      "description": "The domain this process is deployed on.",
+      "description": "The domain this process is deployed on. Will be used to generate links in emails. Set to your own domain",
       "value": "https://cryptocrypt.online",
       "required": true
     },

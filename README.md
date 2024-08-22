@@ -12,6 +12,20 @@ Still, you'll need minimal development skills to be able to deploy your own inst
 
 **You'll need to make sure that you deploy this app on a long-running server, that will still be running for at least a couple months after your disappearance, as you want your heir to be able to read the message you set up.**
 
+### self-hosting: the easy way
+
+This is not the cheapest way, but it's easy.
+Ensure you have an account on Sendgrid.
+Ensure you have an account on Heroku.
+
+Click the button below.
+
+[![Deploy on Heroku](https://www.herokucdn.com/deploy/button.svg)](https://www.heroku.com/deploy?template=https://github.com/heroku/node-js-getting-started)
+
+At the bottom of the page, fill-in the required data.
+Click "Deploy app".
+Jump over to [Adding cron](#adding-cron-scheduled-tasks).
+
 ### self-hosting: testing
 
 To run your own instance, you'll need a Postgres database setup.
@@ -59,12 +73,12 @@ You'll then need to set up the app config through environment variables.
 
 ### Adding cron (scheduled tasks)
 
-Dokku already includes a cron system, and you won't need to do anything.
-
-For Heroku, you need to add the "Heroku Scheduler" add-on, and configure it to run:
+For Heroku, configure the Heroku Scheduler add-on to:
 
 - Run `crypt-healthcheck` _at 00:00 on day-of-month 1, 15, 22, 25, and 28_
 - Run `crypt-release` _at 00:00 on day-of-month 5._
+
+Dokku already includes a cron system, and you won't need to do anything as it will be parsed from app.json.
 
 For manual deployments, set up two cron task:
 
