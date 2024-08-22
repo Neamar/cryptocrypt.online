@@ -59,7 +59,7 @@ describe('GET /crypts/:uuid/verify', () => {
     assert(updatedCrypt.status, STATUS_INVALID);
     assert(updatedCrypt.from_mail, 'foo@bar.com');
     assert(link[1].includes('?hash='), 'Missing hash value');
-    assert(link[1].includes('&validUntil='), 'Missing validUntil value');
+    assert(link[1].includes('&amp;validUntil='), 'Missing validUntil value');
   }));
 });
 
@@ -213,11 +213,11 @@ describe('POST /crypts/:uuid/edit', () => {
     assert.equal(updatedCrypt.status, STATUS_EMPTY);
   }));
 
-  test("should escape sent data", withCrypt(STATUS_EMPTY, async (crypt, upToDateCrypt) => {
+  test("should keep names as single lines", withCrypt(STATUS_EMPTY, async (crypt, upToDateCrypt) => {
     const r = await internalFetch(`/crypts/${crypt.uuid}/edit`, {
       method: 'POST',
       body: JSON.stringify({
-        message: '<p>',
+        from_name: 'Matt\nB',
       }),
       headers: {
         'Accept': 'application/json, text/plain, */*',
@@ -226,7 +226,7 @@ describe('POST /crypts/:uuid/edit', () => {
     });
     assert.strictEqual(r.status, 200);
     const updatedCrypt = await upToDateCrypt();
-    assert.equal(updatedCrypt.message, '&lt;p&gt;');
+    assert.equal(updatedCrypt.from_name, 'Matt B');
     assert.equal(updatedCrypt.status, STATUS_EMPTY);
   }));
 

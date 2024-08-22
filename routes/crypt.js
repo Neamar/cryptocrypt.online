@@ -6,7 +6,7 @@ import db from '../db.js';
 import { cryptLink, getCryptHash, logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT, validateCryptHash, } from '../models/crypt.js';
 import { getCrypt, requireCryptStatus } from '../middlewares/crypt.js';
 import { NotFound } from 'fejl';
-import { sendEmail } from '../helpers/mail.js';
+import { sendEmail, templateEmail } from '../helpers/mail.js';
 const router = new Router();
 
 
@@ -71,17 +71,15 @@ router.post('/crypts/:uuid/verify', getCrypt, requireCryptStatus([STATUS_INVALID
 
   const hash = getCryptHash(ctx.crypt, 'verify-email', mail, Date.now() + 1000 * 60 * 60 * 24);
   const link = `${process.env.SELF_URL}${cryptLink(ctx.crypt, 'verify-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`;
+  const template = templateEmail("verify-email.html", { link });
   const email = {
     from: {
       name: `Cryptocrypt`,
       email: 'contact@cryptocrypt.online',
     },
     to: mail,
-    subject: `A new crypt was created for your email address`,
-    html: `
-<p>Hi,<br>
-A user made a new crypt using your email address. Please <a href="${link}">click this link to confirm you requested that action</a>.</p>
-<p>If you were not responsible for this request, you can safely ignore this message.</p>`,
+    subject: template.subject,
+    html: template.html
   };
 
   await sendEmail(email);
@@ -134,11 +132,11 @@ router.get('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STA
 router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_READY]), async (ctx) => {
   const fields = ['from_name', 'to_name', 'to_mail', 'message'];
 
-  const escapeHtml = (unsafe) => {
-    return unsafe.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');
-  };
-
-  const payload = Object.fromEntries(fields.map(f => [f, escapeHtml(ctx.request.body[f] || '').trim()]));
+  // Trim all fields
+  const payload = Object.fromEntries(fields.map(f => [f, (ctx.request.body[f] || '').trim()]));
+  // Forbid new lines in names
+  payload.from_name = payload.from_name.replace(/\r?\n|\r/g, ' ');
+  payload.to_name = payload.to_name.replace(/\r?\n|\r/g, ' ');
 
   const validEmails = emailValidator.validate(payload.to_mail);
   const validMessage = !!payload['message'];
@@ -161,7 +159,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, ST
       return;
     }
 
-    const fileName = escapeHtml(ctx.request.files.encrypted_message.name);
+    const fileName = ctx.request.files.encrypted_message.name;
     const content = readFileSync(ctx.request.files.encrypted_message.path);
 
     await db.transaction(async (trx) => {

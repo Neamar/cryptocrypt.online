@@ -1,8 +1,11 @@
 import sgMail from '@sendgrid/mail';
 import logger from '../jobs/helpers/logger.js';
 import { isProd, isTest } from './env.js';
+import nunjucks from "nunjucks";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const nunjucksMailenv = nunjucks.configure('mails', { autoescape: true, noCache: !isProd, throwOnUndefined: !isProd, });
 
 // Only for tests, access to lastMail sent
 export let lastMail = null;
@@ -26,4 +29,11 @@ export const sendEmail = async (msg) => {
   } catch (error) {
     logger.error(error);
   }
+};
+
+export const templateEmail = (template, context) => {
+  const content = nunjucksMailenv.render(template, context);
+  const cutOff = content.indexOf('\n\n');
+
+  return { subject: content.substring(0, cutOff), html: content.substring(cutOff + 2) };
 };

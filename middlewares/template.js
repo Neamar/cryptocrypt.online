@@ -3,11 +3,11 @@ import { STATUS_EMPTY, STATUS_INVALID, STATUS_READY, STATUS_SENT } from '../mode
 import { isProd } from '../helpers/env.js';
 
 
-nunjucks.configure('views', { autoescape: true, noCache: !isProd, throwOnUndefined: !isProd, });
+const nunjucksWebenv = nunjucks.configure('views', { autoescape: true, noCache: !isProd, throwOnUndefined: !isProd, });
 
 export const addTemplate = async (ctx, next) => {
   ctx.render = (view, opts = {}) => {
-    ctx.body = nunjucks.render(view, {
+    ctx.body = nunjucksWebenv.render(view, {
       ...opts,
       ctx,
       crypt: ctx.crypt,
