@@ -12,7 +12,8 @@ Still, you'll need minimal development skills to be able to deploy your own inst
 
 **You'll need to make sure that you deploy this app on a long-running server, that will still be running for at least a couple months after your disappearance, as you want your heir to be able to read the message you set up.**
 
-### self-hosting: testing
+### self-hosting: testing
+
 To run your own instance, you'll need a Postgres database setup.
 For development and testing only, you can use something like `docker run --name postgres -p 5432:5432 --env POSTGRES_USER=admin --env POSTGRES_DB=cryptocrypt --env POSTGRES_PASSWORD=admin -d postgres:16`.
 
@@ -26,7 +27,8 @@ npm install
 
 Move on to the section "Configuration".
 
-### self-hosting: deploy
+### self-hosting: deploy
+
 This app is made to be easy to deploy on Heroku-like systems.
 You can use [dokku](https://dokku.com/) (recommended) and deploy on your own server, or deploy to [Heroku](https://heroku.com).
 
@@ -83,6 +85,7 @@ Manual deployments is left up to you.
 - External dependencies are chosen based on their track record of reliability and stability
   - Postgres has been very stable, very efficient for the past 20 years
   - Sendgrid was founded in 2009, and is one of the major player for sending email reliably
+  - Github has been the de-facto provider of Git repositories for the past decade
 
 ## History
 
