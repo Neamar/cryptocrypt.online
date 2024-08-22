@@ -1,6 +1,7 @@
 {
   "name": "cryptocrypt.online",
   "repository": "https://github.com/Neamar/cryptocrypt.online",
+  "description": " Securely help your loved ones retrieve your crypto keys when you're gone. Details at https://github.com/Neamar/cryptocrypt.online/blob/main/README.md",
   "cron": [
     {
       "command": "crypt-healthcheck",
@@ -33,7 +34,7 @@
       "generator": "secret"
     },
     "SENDGRID_API_KEY": {
-      "description": "A Sendgrid API key",
+      "description": "A Sendgrid API key. See https://www.twilio.com/docs/sendgrid/ui/account-and-settings/api-keys",
       "required": true
     }
   },

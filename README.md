@@ -2,7 +2,7 @@
 
 Cryptocrypt helps you set up a delayed message for your loved ones, to help them retrieve your crypto when you're gone.
 
-## self-hosting
+## self-hosting
 
 If you don't trust me and want peace of mind, you can host this on your own server.
 
