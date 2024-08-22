@@ -1,4 +1,6 @@
 {
+  "name": "cryptocrypt.online",
+  "repository": "https://github.com/Neamar/cryptocrypt.online",
   "cron": [
     {
       "command": "crypt-healthcheck",
@@ -22,7 +24,17 @@
   "env": {
     "SELF_URL": {
       "description": "The domain this process is deployed on.",
-      "value": "https://cryptocrypt.online"
+      "value": "https://cryptocrypt.online",
+      "required": true
+    },
+    "SECRET_KEY": {
+      "description": "The secret key to sign data (e.g. verify email).",
+      "required": true,
+      "generator": "secret"
+    },
+    "SENDGRID_API_KEY": {
+      "description": "A Sendgrid API key",
+      "required": true
     }
   },
   "addons": [
