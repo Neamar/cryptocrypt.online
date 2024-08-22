@@ -24,5 +24,14 @@
       "description": "The domain this process is deployed on.",
       "value": "https://cryptocrypt.online"
     }
-  }
+  },
+  "addons": [
+    "scheduler",
+    {
+      "plan": "heroku-postgresql",
+      "options": {
+        "version": "16"
+      }
+    }
+  ]
 }
