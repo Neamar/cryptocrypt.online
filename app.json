@@ -28,6 +28,11 @@
       "value": "https://cryptocrypt.online",
       "required": true
     },
+    "NODE_ENV": {
+      "description": "Environment this app is running in",
+      "value": "production",
+      "required": true
+    },
     "SECRET_KEY": {
       "description": "The secret key to sign data (e.g. verify email).",
       "required": true,

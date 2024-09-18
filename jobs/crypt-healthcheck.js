@@ -6,6 +6,8 @@ import { cryptLink, STATUS_READY } from '../models/crypt.js';
 
 const logger = jobLogger.child({ job: 'healthcheck' });
 
+const hostname = new URL(process.env.SELF_URL).hostname;
+
 export default async function main() {
   logger.info("Finding crypts that haven't been active this month");
   const cryptsToNotify = await db('crypts')
@@ -23,7 +25,7 @@ export default async function main() {
     const email = {
       from: {
         name: 'Cryptocrypt healthcheck',
-        email: `healthcheck@${process.env.SELF_URL}`,
+        email: `healthcheck@${hostname}`,
       },
       to: {
         name: crypt.from_name,

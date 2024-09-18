@@ -9,7 +9,7 @@ import { readToast } from './middlewares/toast.js';
 import { addTemplate } from './middlewares/template.js';
 import { bodyParser } from '@koa/bodyparser';
 import { addCSP } from './middlewares/csp.js';
-import { webLogger } from './jobs/helpers/logger.js';
+import logger, { webLogger } from './jobs/helpers/logger.js';
 import { rateLimitCrypts } from './middlewares/rate-limit.js';
 import { addRequestLogs } from './middlewares/logs.js';
 import { handle404 } from './middlewares/404.js';
@@ -44,4 +44,10 @@ app
   // serve static files (favicon, manifest, ...)
   .use(koaStatic('static', { maxAge: 1000 * 60 * 60 * 24 }));
 
-export const server = app.listen(process.env.PORT || 3000);
+const port = process.env.PORT || 3000;
+export const server = app.listen(port, (err) => {
+  if (err) {
+    throw err;
+  }
+  logger.info(`Listening on port ${port}`);
+});
