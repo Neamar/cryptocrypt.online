@@ -3,5 +3,5 @@ export const isTest = process.env.NODE_ENV === 'test';
 export const secret = process.env.SECRET_KEY;
 
 if (!secret) {
-  throw new Error("SECRET must be defined with a random stable string");
+  throw new Error("SECRET_KEY must be defined with a random stable string");
 }

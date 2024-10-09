@@ -32,10 +32,17 @@
   </head>
 
   <body>
-    <h1>{{ title }}</h1>
-    {% if ctx.toast %}
-    <p>{{ ctx.toast}}</p>
-    {% endif %} {% block main %} {% endblock %}
+    <header>
+      <a href="/" class="logo"><img src="/logo.svg"></a>
+    </header>
+    <section>
+      <h1>{{ title }}</h1>
+      {% if ctx.toast %}
+      <p>{{ ctx.toast}}</p>
+      {% endif %}
+        {% block main %}      
+      {% endblock %}
+    </section>
 
     <script nonce="{{ ctx.nonce }}">
       [...document.querySelectorAll('time')].forEach((e) => {

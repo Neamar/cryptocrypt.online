@@ -1,11 +1,9 @@
 {% extends "template.html"%} {% block main %}
 
 <form method="POST" action="" enctype="multipart/form-data">
-  <p>
     <label for="from_mail">Your email</label>
     <input type="email" name="from_mail" id="from_mail" value="{{ crypt.from_mail}}" placeholder="john.doe@gmail.com" required />
     <span class="hint">We'll use this mail to contact you regularly and ensure you're still around.</span>
-  </p>
   <input type="submit" value="Save email" />
 </form>
 
