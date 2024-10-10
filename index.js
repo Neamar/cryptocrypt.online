@@ -13,6 +13,7 @@ import logger, { webLogger } from './jobs/helpers/logger.js';
 import { rateLimitCrypts } from './middlewares/rate-limit.js';
 import { addRequestLogs } from './middlewares/logs.js';
 import { handle404 } from './middlewares/404.js';
+import { isProd } from './helpers/env.js';
 
 export const app = new Koa();
 
@@ -42,7 +43,7 @@ app
   .use(cryptRoutes.routes())
   .use(cryptRoutes.allowedMethods())
   // serve static files (favicon, manifest, ...)
-  .use(koaStatic('static', { maxAge: 1000 * 60 * 60 * 24 }));
+  .use(koaStatic('static', { maxAge: isProd ? 1000 * 60 * 60 * 24 : 0 }));
 
 const port = process.env.PORT || 3000;
 export const server = app.listen(port, (err) => {
