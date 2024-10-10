@@ -4,28 +4,28 @@
 
 <form method="POST" action="" enctype="multipart/form-data">
   <h2>Who are you?</h2>
-  <p>
+  <div class="form">
     <label for="from_name">Your name</label>
     <input type="text" name="from_name" id="from_name" value="{{ crypt.from_name}}" placeholder="John Doe" required />
     <span class="hint">We'll use this name when contacting your next of kin to ensure they don't think it's spam.</span>
-  </p>
-  <p>
+  </div>
+  <div class="form">
     <label for="from_mail">Your email</label>
     <input type="email" name="from_mail" id="from_mail" value="{{ crypt.from_mail}}" placeholder="john.doe@gmail.com" readonly />
     <span class="hint">We'll use this mail to contact you regularly and ensure you're still around.</span>
-  </p>
+  </div>
 
   <h2>Who should get your message?</h2>
-  <p>
+  <div class="form">
     <label for="to_name">Recipient name</label>
     <input type="text" name="to_name" id="to_name" value="{{ crypt.to_name}}" placeholder="Jane Doe" required />
     <span class="hint">We'll use your next of kin name when contacting them to ensure they don't think it's spam.</span>
-  </p>
-  <p>
+  </div>
+  <div class="form">
     <label for="to_mail">Recipient email</label>
     <input type="email" name="to_mail" id="to_mail" value="{{ crypt.to_mail}}" placeholder="jane.doe@gmail.com" required />
     <span class="hint">Triple check this field!</span>
-  </p>
+  </div>
 
   <h2>Your message</h2>
   <p>
@@ -38,26 +38,26 @@
     <li><a href="/faq">I don't trust you nor your website</a></li>
   </ul>
 
-  <p>
-    <textarea name="message" id="message" required placeholder="Type your message here">{{ crypt.message }}</textarea>
-  </p>
+  <textarea name="message" id="message" required placeholder="Type your message here" rows="5" cols="33">{{ crypt.message }}</textarea>
 
   <details>
     <summary>Advanced options</summary>
     <p>
       You can use the field below to include an encrypted message.<br />
       This is for advanced users, or if you have confidence that your recipient has enough technical skill to be able to figure out how to decrypt
-      this.<br />
+      this.
+    </p>
+    <p>
       See <a href="/encrypt">this page</a> for more details.
     </p>
 
-    <p>
-      {% if crypt.encrypted_message_name %} Currently using
-      <a href="/crypts/{{ crypt.uuid }}/file">{{ crypt.encrypted_message_name }}</a> ({{ crypt.encrypted_message_length }}).<br />
-      {% endif %}
+      <p>
+        {% if crypt.encrypted_message_name %} Currently using
+        <a href="/crypts/{{ crypt.uuid }}/file">{{ crypt.encrypted_message_name }}</a> ({{ crypt.encrypted_message_length }}).<br />
+        {% endif %}
+      </p>
 
       <input type="file" name="encrypted_message" />
-    </p>
   </details>
 
   <input type="submit" value="Save" />
