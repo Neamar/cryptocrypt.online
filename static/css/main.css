@@ -2,6 +2,7 @@
   --red:#E63330;
   --dark:#27293E;
   --dark-red:#C00400;
+  --light-blue: rgb(230, 239, 254);
   --font: "Josefin Sans", sans-serif;
 }
 
@@ -38,15 +39,19 @@ section{
   margin: 0 auto;
 }
 
-a.cta-button, input[type=submit], input[type=file]{
+a.cta-button, input[type=submit]{
   background-color: var(--red);
+  font-size: 1em;
+  font-weight: 300;
   padding: 0.5em 0.8em 0.3em 0.8em;
   border-radius: 5px;
   text-decoration: none;
   color: white;
   font-family: var(--font);
   border: 1px solid white;
-  max-width: 150px;
+  width: min-content;
+  max-width: 100%;
+  cursor: pointer;
   &:hover{
     border: 1px solid var(--dark);
     background-color: var(--dark-red);
@@ -87,7 +92,7 @@ span.hint{
 }
 
 blockquote, tt{
-  background-color: rgb(230, 239, 254);
+  background-color: var(--light-blue);
   padding: 0.3em 0.7em;
   border-radius: 10px;
 }
@@ -96,4 +101,26 @@ div.form{
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+
+input[type=file]::file-selector-button{
+  background-color: var(--dark);
+  color: white;
+  font-family: var(--font);
+  padding: 0.5em 0.8em;
+  border: none;
+  font-size: 1em;
+  border-radius: 5px;
+  cursor: pointer;
+  max-width: 100%;
+}
+
+input[type=file]::file-selector-button:hover{
+  background-color: var(--light-blue);
+  color: var(--dark);
+  transition: all ease-in-out 0.5s;
+}
+
+ul li{
+  margin: 0.3em 0;
 }
