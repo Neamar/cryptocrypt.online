@@ -30,9 +30,9 @@
     <section>
       <h1>{{ title }}</h1>
       {% if ctx.toast %}
-      <p>{{ ctx.toast}}</p>
+      <p class="toast {{ctx.toastLevel}}">{{ ctx.toast}}</p>
       {% endif %}
-        {% block main %}      
+        {% block main %}
       {% endblock %}
     </section>
 
