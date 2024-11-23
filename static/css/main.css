@@ -29,6 +29,22 @@ h1 {
   margin: 0.3em 0;
 }
 
+.toast {
+  border: 1px solid black;
+  padding: 5px;
+  margin: 10px;
+}
+.toast.info {
+  border-color: #32a832;
+}
+.toast.warn {
+  border-color: #db9925;
+}
+.toast.error {
+  border-color: #b54a2f;
+}
+
+
 h2{
   margin: 0.5em 0 0.1em 0;
 }

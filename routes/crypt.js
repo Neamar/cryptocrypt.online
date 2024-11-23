@@ -56,7 +56,7 @@ router.get('/crypts/:uuid/verify', getCrypt, requireCryptStatus([STATUS_INVALID]
 router.post('/crypts/:uuid/verify', getCrypt, requireCryptStatus([STATUS_INVALID]), async (ctx) => {
   const mail = ctx.request.body.from_mail;
   if (!mail || !emailValidator.validate(mail)) {
-    ctx.setToast("Invalid email adress, please double-check your input and try again.");
+    ctx.setToast("Invalid email adress, please double-check your input and try again.", "warn");
     ctx.redirect(cryptLink(ctx.crypt, 'verify'));
     return;
   }
@@ -112,7 +112,7 @@ router.get('/crypts/:uuid/verify-from-email', getCrypt, requireCryptStatus([STAT
     return;
   }
   else {
-    ctx.setToast("Invalid or expired email link. Please try again.");
+    ctx.setToast("Invalid or expired email link. Please try again.", 'error');
     ctx.redirect(cryptLink(ctx.crypt, 'verify'));
   }
 });

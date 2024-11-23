@@ -24,7 +24,7 @@
   <div class="form">
     <label for="to_mail">Recipient email</label>
     <input type="email" name="to_mail" id="to_mail" value="{{ crypt.to_mail}}" placeholder="jane.doe@gmail.com" required />
-    <span class="hint">Triple check this field!</span>
+    <span class="hint">Triple check this field! No communication will be sent there until you disappear.</span>
   </div>
 
   <h2>Your message</h2>
@@ -34,8 +34,8 @@
   </p>
 
   <ul>
-    <li><a href="/writing">Writing advice</a></li>
-    <li><a href="/faq">I don't trust you nor your website</a></li>
+    <li><a href="/writing" target="_blank">Writing advice</a></li>
+    <li><a href="/faq" target="_blank">I don't trust you nor your website</a></li>
   </ul>
 
   <textarea name="message" id="message" required placeholder="Type your message here" rows="5" cols="33">{{ crypt.message }}</textarea>
@@ -48,7 +48,7 @@
       this.
     </p>
     <p>
-      See <a href="/encrypt">this page</a> for more details.
+      See <a href="/encrypt" target="_blank">this page</a> for more details.
     </p>
 
       <p>

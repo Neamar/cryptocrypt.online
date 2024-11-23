@@ -1,10 +1,11 @@
 {% extends "template.html"%} {% block main %} {% if crypt.status !== STATUS_SENT %}
-<p class="info">
-  This is a preview of your crypt, as it would be seen by {{ crypt.to_name }} if you did not answer communication attempts for some time.<br />
-  If this happened, this page (minus this banner) would be automatically emailed to your next of kin, you don't need to do anything.<br />
-  Notice an error?
-</p>
-<a href="/crypts/{{ crypt.uuid }}/edit" class="cta-button">Edit this crypt</a>
+<div class="toast info">
+  <p>This is a preview of your crypt, as it would be seen by {{ crypt.to_name }} if you did not answer communication attempts for some time.<br />
+  If this happened, this page (minus this banner) would be automatically emailed to your next of kin, you don't need to do anything.</p>
+  <p>
+    <a href="/crypts/{{ crypt.uuid }}/edit" class="cta-button">Edit this crypt</a>
+  </p>
+</div>
 {% endif %}
 
 <p>
