@@ -15,7 +15,9 @@ import { addRequestLogs } from './middlewares/logs.js';
 import { handle404 } from './middlewares/404.js';
 import { isProd } from './helpers/env.js';
 
-export const app = new Koa();
+// proxy:true means we run behind a reverse proxy, and we should trust the X-Forwarded-For header.
+// If you ever run Node directly (you shouldn't outside of local dev), make sure to remove this.
+export const app = new Koa({ proxy: true });
 
 app
   // gives access to ctx.log.info
