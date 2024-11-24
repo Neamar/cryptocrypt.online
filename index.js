@@ -9,7 +9,7 @@ import { readToast } from './middlewares/toast.js';
 import { addTemplate } from './middlewares/template.js';
 import { bodyParser } from '@koa/bodyparser';
 import { addCSP } from './middlewares/csp.js';
-import logger, { webLogger } from './jobs/helpers/logger.js';
+import { webLogger } from './helpers/logger.js';
 import { rateLimitCrypts } from './middlewares/rate-limit.js';
 import { addRequestLogs } from './middlewares/logs.js';
 import { handle404 } from './middlewares/404.js';
@@ -52,5 +52,5 @@ export const server = app.listen(port, (err) => {
   if (err) {
     throw err;
   }
-  logger.info(`Listening on port ${port}`);
+  webLogger.info(`Server listening`, { port });
 });

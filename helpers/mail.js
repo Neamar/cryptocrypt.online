@@ -1,5 +1,5 @@
 import sgMail from '@sendgrid/mail';
-import logger from '../jobs/helpers/logger.js';
+import { jobLogger } from './logger.js';
 import { isProd, isTest } from './env.js';
 import nunjucks from "nunjucks";
 
@@ -20,14 +20,14 @@ export const sendEmail = async (msg) => {
     return;
   }
   if (!isProd) {
-    logger.warn("Fake-sending email", msg);
+    jobLogger.warn("Fake-sending email", msg);
     return;
   }
 
   try {
     await sgMail.send(msg);
   } catch (error) {
-    logger.error(error);
+    jobLogger.error(error);
   }
 };
 
