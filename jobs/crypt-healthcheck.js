@@ -6,10 +6,17 @@ import { cryptLink, STATUS_READY } from '../models/crypt.js';
 
 const logger = jobLogger.child({ job: 'healthcheck' });
 
+const pingUrl = process.env.HEALTHCHECK_PING_URL;
+
 const hostname = new URL(process.env.SELF_URL).hostname;
 
 export default async function main() {
   logger.info("Finding crypts that haven't been active this month");
+  // (optional) Notify healthchecks.io that a run started
+  if (pingUrl) {
+    await fetch(`${pingUrl}/start`);
+  }
+
   const cryptsToNotify = await db('crypts')
     .select('uuid', 'from_name', 'from_mail', 'to_name', 'times_contacted')
     .where('refreshed_at', '<', db.raw("DATE_TRUNC('month', current_date)"))
@@ -40,4 +47,9 @@ export default async function main() {
     await db('crypts').where('uuid', crypt.uuid).update('times_contacted', crypt.times_contacted + 1);
 
   }, { concurrency: 3 });
+
+  // (optional) Notify healthchecks.io that a run finished
+  if (pingUrl) {
+    await fetch(`${pingUrl}`);
+  }
 }

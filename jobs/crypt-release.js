@@ -5,10 +5,16 @@ import { sendEmail, templateEmail } from '../helpers/mail.js';
 import { cryptLink, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
 
 const logger = jobLogger.child({ job: 'healthcheck' });
+const pingUrl = process.env.RELEASE_PING_URL;
 
 
 export default async function main() {
   logger.info("Finding crypts that haven't been refreshed and need to be released");
+  // (optional) Notify healthchecks.io that a run started
+  if (pingUrl) {
+    await fetch(`${pingUrl}/start`);
+  }
+
   const cryptsToNotify = await db('crypts')
     .select('uuid', 'from_name', 'from_mail', 'to_name', 'times_contacted')
     .where('refreshed_at', '<', db.raw("DATE_TRUNC('month', current_date)"))
@@ -39,4 +45,9 @@ export default async function main() {
     await db('crypts').where('uuid', crypt.uuid).update('status', STATUS_SENT);
 
   }, { concurrency: 3 });
+
+  // (optional) Notify healtchecks.io that a run finished
+  if (pingUrl) {
+    await fetch(`${pingUrl}`);
+  }
 }
