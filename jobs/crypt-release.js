@@ -1,6 +1,6 @@
 import pMap from 'p-map';
 import db from '../db.js';
-import jobLogger from './helpers/logger.js';
+import { jobLogger } from '../helpers/logger.js';
 import { sendEmail, templateEmail } from '../helpers/mail.js';
 import { cryptLink, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
 
