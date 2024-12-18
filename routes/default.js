@@ -30,7 +30,7 @@ router.get('/faq', (ctx) => {
   const qas = {
     'What is cryptocrypt?': `Cryptocrypt is a free webservice to set up a delayed email. You create this email now, telling your loved ones where they can find your recovery phrase.
     We'll then contact your regularly (once per month) to confirm you're still active.
-    If you fail to answer, we'll assume the worst, and send your message on your behalf.`,
+    If you fail to answer, we'll assume the worst and send your message on your behalf.`,
     'Why is it free?': `I need this service for myself anyway, and it costs the same to run it for me or for thousands. If you like it, you can <a href="/donate">donate</a>.`,
     'Is it secure?': `Remember the golden rule of cold wallet storage: you should <strong>never</strong> share your recovery phrase online, or write it on a computer connected. You should <strong>not</strong> write it in this website: instead, give instructions that will help your loved ones figure out how to retrieve your stash. See <a href="/examples">examples</a>.
     If you follow those rules, you'll be safe.`,
