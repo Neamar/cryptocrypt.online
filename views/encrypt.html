@@ -17,12 +17,11 @@
 
 <p>
   As an example, you could use openssl:
-  <tt>echo "this is the message I want to include" | openssl enc -aes-256-cbc -pbkdf2 -iter 500000 -salt > ~/secret.enc</tt>.<br />
+  <tt>echo "this is the message I want to include" | openssl enc -aes-256-cbc -pbkdf2 -iter 500000 -salt &gt; ~/secret.enc</tt>.<br />
 </p>
 
 <p class="info">
-  Although this sounds like a great idea, I recommend against using a symmetric algorithm based on your recipient public key. This might change at any
-  time.
+  Although this sounds like a great idea, I recommend against using your recipient public key. This might change at any time.
 </p>
 
 <h2>Include all the information they'll need!</h2>
