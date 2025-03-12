@@ -24,7 +24,7 @@ export default async function main() {
   logger.info("Releasing crypts", { crypts: cryptsToNotify.map(c => c.uuid) });
 
   await pMap(cryptsToNotify, async (crypt) => {
-    const link = `${process.env.SELF_URL}${cryptLink(crypt, 'healthcheck')}`;
+    const link = `${process.env.SELF_URL}${cryptLink(crypt, 'read')}`;
     const template = templateEmail(`release.html`, { crypt, link });
 
     const email = {

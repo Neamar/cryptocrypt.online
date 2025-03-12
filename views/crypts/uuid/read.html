@@ -10,12 +10,12 @@
 
 <p>
   This message was written for you by {{ crypt.from_name }}, with instructions to send this to you should they stop answering communication.<br />
-  Sadly, we haven't heard back from {{ crypt.from_name }} in over a month, and we are now sharing the message he trusted us with.
+  Sadly, we haven't heard back from {{ crypt.from_name }} in over a month, and we are now sharing the message they trusted us with.
 </p>
 
 <hr />
 
-<p>{{ crypt.message }}</p>
+<p>{{ crypt.message | escape | nl2br }}</p>
 
 {% if crypt.encrypted_message_name %}
 <p>

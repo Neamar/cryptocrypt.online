@@ -27,7 +27,7 @@ export const logCryptEvent = async (cryptUuid, event, ctx, trx = db) => {
  *
  * @param {Object} crypt
  * @param {String} crypt.uuid uuid of this crypt
- * @param {"warnings"|"verify"|"verify-from-email"|"healthcheck"|"edit"|""|"preview"} action
+ * @param {"warnings"|"verify"|"verify-from-email"|"healthcheck"|"edit"|""|"read"} action
  * @returns
  */
 export const cryptLink = (crypt, action) => `/crypts/${crypt.uuid}/${action}`;
