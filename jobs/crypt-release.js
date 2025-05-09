@@ -6,6 +6,7 @@ import { cryptLink, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
 
 const logger = jobLogger.child({ job: 'healthcheck' });
 const pingUrl = process.env.RELEASE_PING_URL;
+const hostname = new URL(process.env.SELF_URL).hostname;
 
 
 export default async function main() {
@@ -16,7 +17,7 @@ export default async function main() {
   }
 
   const cryptsToNotify = await db('crypts')
-    .select('uuid', 'from_name', 'from_mail', 'to_name', 'times_contacted')
+    .select('uuid', 'from_name', 'from_mail', 'to_name', 'to_mail', 'times_contacted')
     .where('refreshed_at', '<', db.raw("DATE_TRUNC('month', current_date)"))
     .where('times_contacted', '>=', 6)
     .where('status', STATUS_READY);
@@ -30,7 +31,7 @@ export default async function main() {
     const email = {
       from: {
         name: `${crypt.from_name} delayed message`,
-        email: `contact@${process.env.SELF_URL}`,
+        email: `contact@${hostname}`,
       },
       to: {
         name: crypt.to_name,
