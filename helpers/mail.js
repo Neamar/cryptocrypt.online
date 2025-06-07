@@ -14,6 +14,10 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+if (isProd && (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS)) {
+  jobLogger.error("SMTP configuration is missing. Please set SMTP_HOST, SMTP_USER, and SMTP_PASS in your environment variables.");
+  throw new Error("SMTP configuration is missing. Please set SMTP_HOST, SMTP_USER, and SMTP_PASS in your environment variables.");
+}
 
 const nunjucksMailenv = nunjucks.configure('mails', { autoescape: true, noCache: !isProd, throwOnUndefined: !isProd, });
 
@@ -37,6 +41,7 @@ export const sendEmail = async (msg) => {
     jobLogger.warn("Fake-sending email", msg);
     return true;
   }
+
 
   try {
     await transporter.sendMail(msg);

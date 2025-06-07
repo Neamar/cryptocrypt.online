@@ -69,7 +69,9 @@ You'll then need to set up the app config through environment variables.
 
 - `SELF_URL`: the URL where you're deploying the app on. This will be used to generate valid email links.
 - `SECRET_KEY`: a random generated string, length around 40 characters, that'll be used as a seed to generate signed link (for instance, for email validation)
-- `SENDGRID_API_KEY`: a [Sendgrid](https://sendgrid.com/) key, to send emails. The free plan should be enough for a personal use-case. [Details here](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/api-keys)
+- `SMTP_HOST`: the server to use to send emails for this app. You can use Sendgrid, Mailjet, Mailchimp, your own email server...
+- `SMTP_USER`: SMTP user. Be careful, if you use your own email provider to send an email to yourself, the mail may not appear in your inbox.
+- `SMTP_PASS`: SMTP pass. Keep this safe!
 
 ### Adding cron (scheduled tasks)
 
@@ -98,7 +100,7 @@ Manual deployments is left up to you.
 - Every design decision is made to maximize the likelihood that the same code will be running in ten, twenty years
 - External dependencies are chosen based on their track record of reliability and stability
   - Postgres has been very stable, very efficient for the past 20 years
-  - Sendgrid was founded in 2009, and is one of the major player for sending email reliably
+  - SMTP remains the most neutral way to send emails reliably
   - Github has been the de-facto provider of Git repositories for the past decade
 
 ## History

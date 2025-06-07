@@ -7,8 +7,8 @@
   "scripts": {
     "test": "NODE_ENV=test SELF_URL=http://localhost:3000 node --test",
     "start": "NODE_ENV=production node index.js",
-    "dev": "NODE_ENV=staging nodemon index.js",
-    "devw": "nodemon index.js",
+    "dev": "NODE_ENV=staging node --watch index.js",
+    "devw": "node --watch index.js",
     "job": "node jobs/helpers/runner.js",
     "migrate": "knex migrate:latest"
   },
@@ -46,7 +46,6 @@
     "eslint": "^9.6.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
-    "nodemon": "^3.1.4",
     "prettier": "^3.3.2"
   }
 }
