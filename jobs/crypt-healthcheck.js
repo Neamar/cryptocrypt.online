@@ -30,14 +30,8 @@ export default async function main() {
 
     const template = templateEmail(`healthcheck-${Math.min(crypt.times_contacted + 1, 6)}.html`, { crypt, link, mainLink });
     const email = {
-      from: {
-        name: 'Cryptocrypt healthcheck',
-        email: `healthcheck@${hostname}`,
-      },
-      to: {
-        name: crypt.from_name,
-        email: crypt.from_mail,
-      },
+      from: `"Cryptocrypt healthcheck" <healthcheck@${hostname}>`,
+      to: `"${crypt.from_name}" <${crypt.from_mail}>`,
       subject: template.subject,
       html: template.html
     };

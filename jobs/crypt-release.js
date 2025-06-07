@@ -29,14 +29,8 @@ export default async function main() {
     const template = templateEmail(`release.html`, { crypt, link });
 
     const email = {
-      from: {
-        name: `${crypt.from_name} delayed message`,
-        email: `contact@${hostname}`,
-      },
-      to: {
-        name: crypt.to_name,
-        email: crypt.to_mail,
-      },
+      from: `"${crypt.from_name} <contact@${hostname}>`,
+      to: `"${crypt.to_name}" <${crypt.to_mail}>`,
       subject: template.subject,
       html: template.html
     };
