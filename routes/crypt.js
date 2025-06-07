@@ -75,10 +75,7 @@ router.post('/crypts/:uuid/verify', getCrypt, requireCryptStatus([STATUS_INVALID
   const hostname = new URL(process.env.SELF_URL).hostname;
 
   const email = {
-    from: {
-      name: `Cryptocrypt`,
-      email: `contact@${hostname}`,
-    },
+    from: `Cryptocrypt <contact@${hostname}>`,
     to: mail,
     subject: template.subject,
     html: template.html

@@ -38,8 +38,16 @@
       "required": true,
       "generator": "secret"
     },
-    "SENDGRID_API_KEY": {
-      "description": "A Sendgrid API key. See https://www.twilio.com/docs/sendgrid/ui/account-and-settings/api-keys",
+    "SMTP_HOST": {
+      "description": "The SMTP server to use for sending emails.",
+      "required": true
+    },
+    "SMTP_USER": {
+      "description": "The username to use for the SMTP server.",
+      "required": true
+    },
+    "SMTP_PASS": {
+      "description": "The password to use for the SMTP server.",
       "required": true
     }
   },
