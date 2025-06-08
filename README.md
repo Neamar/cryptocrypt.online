@@ -15,7 +15,7 @@ Still, you'll need minimal development skills to be able to deploy your own inst
 ### self-hosting: the easy way
 
 This is not the cheapest way, but it's easy.
-Ensure you have an account on Sendgrid.
+Ensure you have an account to send mail from (Sendgrid, Mailchimp, or your own email like GMail).
 Ensure you have an account on Heroku.
 
 Click the button below.
