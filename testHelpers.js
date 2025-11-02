@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import db from './db.js';
 
 /**
@@ -42,6 +42,8 @@ export const withCrypt = (status, custom, cb) => {
   };
 };
 
+let serverPort = null;
+
 /**
  * Run fetch() on the internal server
  * @param {String} endpoint
@@ -49,7 +51,12 @@ export const withCrypt = (status, custom, cb) => {
  * @returns
  */
 export const internalFetch = async (endpoint, options = {}) => {
-  // @ts-expect-error dynamic import
-  await import("./index.js");
-  return fetch(`http://localhost:3000${endpoint}`, options);
+  if (serverPort === null) {
+    // @ts-expect-error dynamic import
+    const { server } = await import("./index.js");
+    // Server will be running on epehemeral port (PORT=0 in test_mode)
+    const addr = server.address();
+    serverPort = addr.port;
+  }
+  return fetch(`http://localhost:${serverPort}${endpoint}`, options);
 };

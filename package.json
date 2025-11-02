@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "NODE_ENV=test SELF_URL=http://localhost:3000 node --test",
+    "test": "NODE_ENV=test PORT=0 SELF_URL=http://localhost:3000 node --test",
     "start": "NODE_ENV=production node index.js",
     "dev": "NODE_ENV=staging node --watch index.js",
     "devw": "node --watch index.js",
