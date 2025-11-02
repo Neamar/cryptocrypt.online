@@ -18,7 +18,7 @@ describe('GET /crypts/create', () => {
     const r = await internalFetch('/crypts/create', { method: "POST", redirect: "manual" });
     assert.strictEqual(r.status, 302);
     const location = r.headers.get('location');
-    assert.match(location, new RegExp('^/crypts/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/warnings$'));
+    assert.match(location, /^\/crypts\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/warnings$/);
   });
 });
 
@@ -55,7 +55,7 @@ describe('GET /crypts/:uuid/verify', () => {
     const link = lastMail.html.match(`(/crypts/${crypt.uuid}/verify-from-email.+?)"`);
     assert(link, "No valid link found");
 
-    let updatedCrypt = await upToDateCrypt();
+    const updatedCrypt = await upToDateCrypt();
     assert(updatedCrypt.status, STATUS_INVALID);
     assert(updatedCrypt.from_mail, 'foo@bar.com');
     assert(link[1].includes('?hash='), 'Missing hash value');
@@ -157,7 +157,7 @@ describe('GET /crypts/:uuid/healthcheck', () => {
     const startDate = new Date();
     const r = await internalFetch(`/crypts/${crypt.uuid}/healthcheck`);
     assert.strictEqual(r.status, 200);
-    assert.ok((await upToDateCrypt()).refreshed_at > startDate);
+    assert.ok((await upToDateCrypt()).refreshed_at > startDate, 'refreshed_at should be updated');
   }));
 
   test("should redirect for a crypt that was sent", withCrypt(STATUS_SENT, {
@@ -309,6 +309,83 @@ describe("Test happy path", () => {
   }));
 
 });
+
+
+describe('GET /crypts/:uuid/file', () => {
+  has404('/crypts/ca761232-ed42-11ce-bacd-00aa0057b223/file');
+
+  test('should return 404 if crypt has no file', withCrypt(STATUS_READY, async (crypt) => {
+    // withCrypt creates a crypt without an encrypted_message file
+    const r = await internalFetch(`/crypts/${crypt.uuid}/file`);
+    assert.strictEqual(r.status, 404);
+  }));
+
+  test('should return 200 with file content when file exists', withCrypt(STATUS_READY, async (crypt) => {
+    // Upload a file by editing the crypt
+    const testFileName = 'test-message.txt';
+    const testContent = 'This is encrypted content';
+
+    // Update crypt directly with file data
+    await db('crypts').where('uuid', crypt.uuid).update({
+      encrypted_message: Buffer.from(testContent),
+      encrypted_message_name: testFileName,
+    });
+
+    const r = await internalFetch(`/crypts/${crypt.uuid}/file`);
+    assert.strictEqual(r.status, 200);
+
+    // Check response content type
+    const body = await r.arrayBuffer();
+    const bodyString = Buffer.from(body).toString();
+    assert.strictEqual(bodyString, testContent, 'Response body should contain file content');
+  }));
+
+  test('should set correct content-disposition header with filename', withCrypt(STATUS_READY, async (crypt) => {
+    const testFileName = 'my-encrypted-message.dat';
+
+    await db('crypts').where('uuid', crypt.uuid).update({
+      encrypted_message: Buffer.from('encrypted data'),
+      encrypted_message_name: testFileName,
+    });
+
+    const r = await internalFetch(`/crypts/${crypt.uuid}/file`);
+    const contentDisposition = r.headers.get('content-disposition');
+
+    assert(contentDisposition, 'content-disposition header should be set');
+    assert(contentDisposition.includes('attachment'), 'Should be an attachment');
+    assert(contentDisposition.includes(`filename="${testFileName}"`), `Should include filename "${testFileName}"`);
+  }));
+
+  test('should return correct binary file content', withCrypt(STATUS_READY, async (crypt) => {
+    // Test with binary data
+    const binaryData = Buffer.from([0xff, 0xfe, 0x00, 0x01, 0x02, 0x03]);
+
+    await db('crypts').where('uuid', crypt.uuid).update({
+      encrypted_message: binaryData,
+      encrypted_message_name: 'binary-file.bin',
+    });
+
+    const r = await internalFetch(`/crypts/${crypt.uuid}/file`);
+    const responseBuffer = await r.arrayBuffer();
+
+    assert.deepStrictEqual(Buffer.from(responseBuffer), binaryData, 'Response should contain correct binary content');
+  }));
+
+  test('should handle files with special characters in filename', withCrypt(STATUS_READY, async (crypt) => {
+    const specialFileName = 'my-encrypted-message-2024.enc';
+
+    await db('crypts').where('uuid', crypt.uuid).update({
+      encrypted_message: Buffer.from('content'),
+      encrypted_message_name: specialFileName,
+    });
+
+    const r = await internalFetch(`/crypts/${crypt.uuid}/file`);
+    const contentDisposition = r.headers.get('content-disposition');
+
+    assert(contentDisposition.includes(`filename="${specialFileName}"`), 'Should preserve special characters in filename');
+  }));
+});
+
 
 
 after(() => db.destroy());
