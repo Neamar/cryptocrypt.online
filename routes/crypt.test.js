@@ -18,7 +18,7 @@ describe('GET /crypts/create', () => {
     const r = await internalFetch('/crypts/create', { method: "POST", redirect: "manual" });
     assert.strictEqual(r.status, 302);
     const location = r.headers.get('location');
-    assert.match(location, new RegExp('^/crypts/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/warnings$'));
+    assert.match(location, /^\/crypts\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/warnings$/);
   });
 });
 
@@ -55,7 +55,7 @@ describe('GET /crypts/:uuid/verify', () => {
     const link = lastMail.html.match(`(/crypts/${crypt.uuid}/verify-from-email.+?)"`);
     assert(link, "No valid link found");
 
-    let updatedCrypt = await upToDateCrypt();
+    const updatedCrypt = await upToDateCrypt();
     assert(updatedCrypt.status, STATUS_INVALID);
     assert(updatedCrypt.from_mail, 'foo@bar.com');
     assert(link[1].includes('?hash='), 'Missing hash value');
