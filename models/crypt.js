@@ -24,6 +24,8 @@ export const logCryptEvent = async (cryptUuid, event, ctx, trx = db) => {
 };
 
 /**
+ * Gets a link for a given crypt and action
+ * For instance: /crypts/abc-123/verify-from-email
  *
  * @param {Object} crypt
  * @param {String} crypt.uuid uuid of this crypt
@@ -33,7 +35,8 @@ export const logCryptEvent = async (cryptUuid, event, ctx, trx = db) => {
 export const cryptLink = (crypt, action) => `/crypts/${crypt.uuid}/${action}`;
 
 /**
- * Generate a unique hash for a given action
+ * Generate a unique hash for a given action, with expiration time.
+ * This can then be validated through @validateCryptHash
  * @param {Object} crypt
  * @param {String} crypt.uuid uuid of this crypt
  * @param {String} action the action to hash against

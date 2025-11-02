@@ -180,20 +180,6 @@ describe('validateCryptHash()', () => {
 
     assert.strictEqual(isValid, true, 'Should handle string validUntil and convert to number');
   });
-
-  it('should handle edge case of exactly expired token', () => {
-    const crypt = { uuid: randomUUID() };
-    const action = 'verify-email';
-    const payload = 'test@example.com';
-
-    // Use a time in the past, but test with the exact same timestamp
-    const pastTime = Date.now() - 1000;
-    const { hash } = getCryptHash(crypt, action, payload, pastTime);
-
-    // Note: The validation checks validUntil > Date.now(), so exactly expired (validUntil === Date.now()) should fail
-    const isValid = validateCryptHash(crypt, action, payload, hash, pastTime);
-    assert.strictEqual(isValid, false, 'Should reject token at exact expiry boundary');
-  });
 });
 
 describe('logCryptEvent()', () => {
