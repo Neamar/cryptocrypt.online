@@ -1,12 +1,12 @@
 import Router from '@koa/router';
 import emailValidator from 'email-validator';
-import { randomUUID } from 'crypto';
-import { readFileSync } from 'fs';
-import db from '../db.js';
-import { cryptLink, getCryptHash, logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT, validateCryptHash, } from '../models/crypt.js';
-import { getCrypt, requireCryptStatus } from '../middlewares/crypt.js';
 import { NotFound } from 'fejl';
+import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import db from '../db.js';
 import { sendEmail, templateEmail } from '../helpers/mail.js';
+import { getCrypt, requireCryptStatus } from '../middlewares/crypt.js';
+import { cryptLink, getCryptHash, logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT, validateCryptHash, } from '../models/crypt.js';
 const router = new Router();
 
 
@@ -138,10 +138,10 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, ST
   payload.to_name = payload.to_name.replace(/\r?\n|\r/g, ' ');
 
   const validEmails = emailValidator.validate(payload.to_mail);
-  const validMessage = !!payload['message'];
-  const validNames = !!payload['from_name'] && !!payload['to_name'];
+  const validMessage = !!payload.message;
+  const validNames = !!payload.from_name && !!payload.to_name;
 
-  payload['status'] = validEmails && validMessage && validNames ? STATUS_READY : STATUS_EMPTY;
+  payload.status = validEmails && validMessage && validNames ? STATUS_READY : STATUS_EMPTY;
 
   await db.transaction(async (trx) => {
     await db('crypts').update({
@@ -171,7 +171,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, ST
     });
   }
 
-  if (payload['status'] === STATUS_READY) {
+  if (payload.status === STATUS_READY) {
     ctx.setToast("Your crypt was saved.");
     ctx.redirect(cryptLink(ctx.crypt, ''));
   }
@@ -233,7 +233,7 @@ router.post('/crypts/:uuid/delete', getCrypt, async (ctx) => {
  * Show crypt content (and a preview warning if status <> sent)
  */
 router.get('/crypts/:uuid/read', getCrypt, requireCryptStatus([STATUS_READY, STATUS_SENT, STATUS_READ]), async (ctx) => {
-  if (ctx.crypt.status == STATUS_SENT || ctx.crypt.status == STATUS_READ) {
+  if (ctx.crypt.status === STATUS_SENT || ctx.crypt.status === STATUS_READ) {
     await logCryptEvent(ctx.crypt.uuid, "Crypt read by recipient", ctx);
     if (ctx.crypt.status === STATUS_SENT) {
       await db('crypts').where('uuid', ctx.crypt.uuid).update('status', STATUS_READ).update('read_at', new Date());
