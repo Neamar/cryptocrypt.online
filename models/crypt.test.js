@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { describe, it } from 'node:test';
 import db from '../db.js';
 import { withCrypt } from '../testHelpers.js';
-import { getCryptHash, logCryptEvent, validateCryptHash, STATUS_READY } from './crypt.js';
+import { getCryptHash, logCryptEvent, STATUS_READY, validateCryptHash } from './crypt.js';
 
 describe('getCryptHash()', () => {
   it('should generate a hash', () => {
@@ -137,6 +137,7 @@ describe('validateCryptHash()', () => {
     const futureTime = Date.now() + 10000;
 
     const { hash, validUntil } = getCryptHash(crypt, action, payload, futureTime);
+    // @ts-expect-error testing wrong action
     const isValid = validateCryptHash(crypt, 'wrong-action', payload, hash, validUntil);
 
     assert.strictEqual(isValid, false, 'Should reject wrong action');
@@ -174,6 +175,7 @@ describe('validateCryptHash()', () => {
     const futureTime = Date.now() + 10000;
 
     const { hash, validUntil } = getCryptHash(crypt, action, payload, futureTime);
+    // @ts-expect-error testing wrong type
     const isValid = validateCryptHash(crypt, action, payload, hash, String(validUntil));
 
     assert.strictEqual(isValid, true, 'Should handle string validUntil and convert to number');
