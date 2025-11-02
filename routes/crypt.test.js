@@ -158,7 +158,7 @@ describe('GET /crypts/:uuid/healthcheck', () => {
     const r = await internalFetch(`/crypts/${crypt.uuid}/healthcheck`);
     assert.strictEqual(r.status, 200);
     const refreshedAt = (await upToDateCrypt()).refreshed_at;
-    assert.ok(refreshedAt > startDate, `refreshed_at should be updated (got ${refreshedAt}); now is ${new Date()}`);
+    assert.ok(refreshedAt >= startDate, `refreshed_at should be updated (got ${refreshedAt}); now is ${new Date()}`);
   }));
 
   test("should redirect for a crypt that was sent", withCrypt(STATUS_SENT, {

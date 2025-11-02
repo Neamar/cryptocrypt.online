@@ -1,14 +1,14 @@
 import Koa from 'koa';
 import koaStatic from 'koa-static';
-import koaFormidable from 'koa2-formidable';
-import koaBunyanLogger from 'koa-bunyan-logger';
+import { bodyParser } from '@koa/bodyparser';
 
 import defaultRoutes from './routes/default.js';
 import cryptRoutes from './routes/crypt.js';
 import { readToast } from './middlewares/toast.js';
 import { addTemplate } from './middlewares/template.js';
-import { bodyParser } from '@koa/bodyparser';
 import { addCSP } from './middlewares/csp.js';
+import { attachLogger } from './middlewares/logger.js';
+import { formidableMiddleware } from './middlewares/formidable.js';
 import { webLogger } from './helpers/logger.js';
 import { rateLimitCrypts } from './middlewares/rate-limit.js';
 import { addRequestLogs } from './middlewares/logs.js';
@@ -21,7 +21,7 @@ export const app = new Koa({ proxy: true });
 
 app
   // gives access to ctx.log.info
-  .use(koaBunyanLogger(webLogger))
+  .use(attachLogger(webLogger))
   // automatically log requests
   .use(addRequestLogs)
   // rate limit access to /crypts/* endpoint
@@ -31,7 +31,7 @@ app
   // Add Content Security Policy headers
   .use(addCSP)
   // parse file data in <form>
-  .use(koaFormidable())
+  .use(formidableMiddleware)
   // parse body data
   .use(bodyParser())
   // allow using ctx.render()
