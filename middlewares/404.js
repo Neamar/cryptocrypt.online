@@ -3,7 +3,7 @@ export const handle404 = async (ctx, next) => {
     await next();
     const status = ctx.status || 404;
     if (status === 404) {
-      ctx.throw(404);
+      ctx.throw(404, 'Not Found');
     }
   } catch (err) {
     ctx.status = err.status || err.statusCode || 500;
