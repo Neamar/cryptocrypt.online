@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { randomUUID } from 'node:crypto';
-import { describe, it } from 'node:test';
+import { after, describe, it } from 'node:test';
 import db from '../db.js';
 import { withCrypt } from '../testHelpers.js';
 import { getCryptHash, logCryptEvent, STATUS_READY, validateCryptHash } from './crypt.js';
@@ -309,4 +309,9 @@ describe('logCryptEvent()', () => {
     assert.strictEqual(event1.crypt_uuid, crypt.uuid, 'Event 1 should be associated with crypt1');
     assert.strictEqual(event2.crypt_uuid, crypt2.uuid, 'Event 2 should be associated with crypt2');
   }));
+});
+
+// Clean up database connection after all tests
+after(async () => {
+  await db.destroy();
 });
