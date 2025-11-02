@@ -49,7 +49,7 @@ export const withCrypt = (status, custom, cb) => {
  * @returns
  */
 export const internalFetch = async (endpoint, options = {}) => {
-  // @ts-ignore
+  // @ts-expect-error dynamic import
   await import("./index.js");
   return fetch(`http://localhost:3000${endpoint}`, options);
 };
