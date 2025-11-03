@@ -20,7 +20,10 @@
 
     {% if not ctx.crypt %}
     <script defer data-domain="cryptocrypt.online" src="https://t.neamar.fr/js/script.js" nonce="{{ ctx.nonce }}"></script>
-    {% endif %} {% block head %} {% endblock %}
+    {% endif %}
+
+    {% block head %}
+    {% endblock %}
   </head>
 
   <body>
@@ -28,11 +31,14 @@
       <a href="/" class="logo"><img src="/logo.svg"></a>
     </header>
     <section>
+      {% if showHtmlTitle %}
       <h1>{{ title }}</h1>
+      {% endif %}
       {% if ctx.toast %}
       <p class="toast {{ctx.toastLevel}}">{{ ctx.toast}}</p>
       {% endif %}
-        {% block main %}
+
+      {% block main %}
       {% endblock %}
     </section>
 
@@ -42,5 +48,7 @@
         e.title = new Date(e.dateTime).toISOString();
       });
     </script>
+    {% block scripts %}
+    {% endblock %}
   </body>
 </html>
