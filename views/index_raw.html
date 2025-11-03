@@ -1,44 +1,122 @@
-{% set title = "Put your crypto affairs in order" %} {% extends "template.html"%} {% block main %}
+{% set title = "Put your crypto assets in order" %}
+{% set showHtmlTitle = false %}
+{% extends "template.html"%}
 
-<h2>35% of Bitcoin are believed to be gone forever.</h2>
-<p>Cryptocrypt helps you set up a delayed message for your loved ones, to help them retrieve your crypto when you're gone.</p>
+{% block main %}
 
-<form method="POST" action="/crypts/create">
-  <input type="submit" value="Create a crypt" />
-</form>
+<div class="hero">
+  <div class="column">
+    <h1>Your crypto. Your message. Your future.</h1>
+    <p>Schedule a delayed message to ensure your loved ones can access your digital wealth when you're no longer here. Know your assets will be transferred safely at the right time.</p>
 
-<ul>
-  <li>
-    <h3>Free</h3>
-    <p>This service is free of use.<br />It's maintained by donations from happy users.</p>
-  </li>
-  <li>
-    <h3>Secure</h3>
-    <p>
-      Data is encrypted in transit, and can be completely deleted at will.<br />
-      You can also encrypt your message using the same algorithms that secure blockchains,<br />
-      or self-host an instance of cryptocrypt on your own server.
+    <form method="POST" action="/crypts/create">
+      <input type="submit" value="Create a crypt for free" />
+    </form>
+  </div>
+
+  <div class="center">
+    <img src="/images/crypt.svg" alt="Crypt" />
+  </div>
+</div>
+
+<div class="center">
+  <div>
+    <h2>Pass on your digital legacy</h2>
+    <p>An estimated 35% of Bitcoin is lost forever.<br />
+    Don't let yours be next.
     </p>
-  </li>
-  <li>
-    <h3>Easy</h3>
-    <p>
-      It only takes a couple minutes to get everything set up.<br />
-      And you're then free to live your life.
-    </p>
-  </li>
-</ul>
+  </div>
+</div>
 
-<h3>How does it work?</h3>
-<ol>
-  <li>
-    You create a crypt. You tell us who your next of kin is, and your instructions to help them retrieve your cryptos. (<a href="/examples"
-      >see examples</a
-    >)
-  </li>
-  <li>You get contacted regularly, and confirm you're still around.</li>
-  <li>If you fail to answer for some time, we send your message automatically to the intended recipient.</li>
-</ol>
+<div class="row">
+  <div>
+    <h2>Automatic crypto inheritance</h2>
 
-<a href="/faq">More questions?</a>
+    <p>Set up a delayed message to ensure your loved ones can retrieve your crypto assets after you're gone.</p>
+  </div>
+
+  <div>
+    <h2>Crypto seed phrase protection</h2>
+
+    <p>Identify trusted friends and family to help recover your seed phrase and secure your crypto assets.</p>
+  </div>
+</div>
+
+<div class="even row">
+  <div>
+    <h2>Free</h2>
+
+    <p>This service is free to use. It's maintained by donations from happy users.</p>
+  </div>
+
+  <div>
+  <h2>Secure</h2>
+
+    <p>Data is encrypted in transit and can be completely deleted at will. You can also encrypt your message using the same algorithms that secure blockchains, or self-host an instance of CryptoCrypt on your own server.</p>
+  </div>
+
+  <div>
+  <h2>Easy to set-up</h2>
+
+    <p>It only takes a couple of minutes to get everything set up. You're then free to live your life.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>How does it work?</h2>
+
+  <p>Set up your crypt easily in a minute.</p>
+</div>
+
+<div class="section">
+  <h2>Safeguard your crypto assets for the next generation</h2>
+
+  <p>Your crypto. Your message. Your future.<br />
+  Schedule a delayed message to ensure your loved ones can access your digital wealth when you're no longer here. Know your assets will be transferred safely at the right time.</p>
+</div>
+
+{% endblock %}
+
+{% block head %}
+<style nonce="{{ ctx.nonce }}">
+  .hero {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    padding: 4rem 0;
+    min-height: 500px;
+
+    & > div {
+      flex: 1;
+    }
+
+    img {
+      max-width: 400px;
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .center {
+    display: flex;
+    justify-content: center;
+  }
+
+  .row {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+
+    &.even > div {
+      flex: 1;
+    }
+  }
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: center;
+  }
+</style>
 {% endblock %}

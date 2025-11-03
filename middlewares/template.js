@@ -15,6 +15,7 @@ export const addTemplate = async (ctx, next) => {
       STATUS_INVALID,
       STATUS_READY,
       STATUS_SENT,
+      showHtmlTitle: true,
     });
   };
 

@@ -3,7 +3,7 @@ import Router from '@koa/router';
 const router = new Router();
 
 router.get('/', (ctx) => {
-  ctx.render('index.html');
+  ctx.render('index_raw.html');
 });
 
 router.get('/donate', (ctx) => {
