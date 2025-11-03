@@ -1,24 +1,24 @@
-:root{
-  --red:#E63330;
-  --dark:#27293E;
-  --dark-red:#C00400;
+:root {
+  --red: #e63330;
+  --dark: #27293e;
+  --dark-red: #c00400;
   --light-blue: rgb(230, 239, 254);
-  --font: "Josefin Sans", sans-serif;
+  --font: 'Josefin Sans', sans-serif;
 }
 
-body{
+body {
   color: var(--dark);
-  font-family: "Josefin Sans", sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-optical-sizing: auto;
   font-weight: 400;
   font-style: normal;
   margin: 0;
 }
 
-header{
+header {
   padding: 0.7em 1.5em;
-  background: linear-gradient(180deg, rgba(39,41,62,1) 46%, rgba(255,255,255,1) 46%);
-  a.logo img{
+  background: linear-gradient(180deg, rgba(39, 41, 62, 1) 46%, rgba(255, 255, 255, 1) 46%);
+  a.logo img {
     width: 80px;
     height: 80px;
   }
@@ -44,18 +44,18 @@ h1 {
   border-color: #b54a2f;
 }
 
-
-h2{
+h2 {
   margin: 0.5em 0 0.1em 0;
 }
 
-section{
+section {
   padding: 1em;
   max-width: 1100px;
   margin: 0 auto;
 }
 
-a.cta-button, input[type=submit]{
+a.cta-button,
+input[type='submit'] {
   background-color: var(--red);
   font-size: 1em;
   font-weight: 300;
@@ -68,58 +68,66 @@ a.cta-button, input[type=submit]{
   width: min-content;
   max-width: 100%;
   cursor: pointer;
-  &:hover{
+  &:hover {
     border: 1px solid var(--dark);
     background-color: var(--dark-red);
     transition: all ease-in-out 0.5s;
   }
 }
 
-a:not(.cta-button){
+a:not(.cta-button) {
   font-weight: 700;
   color: var(--dark);
   text-decoration-color: var(--red);
-  &:hover{
+  &:hover {
     color: var(--red);
     transition: all ease-in-out 0.5s;
   }
 }
 
-form{
+form {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-input[type=email], input[type=text]{
+input[type='email'],
+input[type='text'] {
   max-width: 200px;
   border-radius: 3px;
   border: 1px solid var(--dark);
   padding: 0.4em 0.6em 0.2em 0.6em;
   font-family: var(--font);
-  &:focus-within{
+  &:focus-within {
     outline: 1px solid var(--dark);
   }
 }
 
-span.hint{
+span.hint {
   font-style: italic;
   font-weight: 300;
 }
 
-blockquote, tt{
+blockquote,
+tt {
   background-color: var(--light-blue);
   padding: 0.3em 0.7em;
   border-radius: 10px;
+
+  &.cursive {
+    font-family: cursive;
+    font-size: 1.2em;
+    line-height: 1.2em;
+  }
 }
 
-div.form{
+div.form {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
-input[type=file]::file-selector-button{
+input[type='file']::file-selector-button {
   background-color: var(--dark);
   color: white;
   font-family: var(--font);
@@ -131,12 +139,12 @@ input[type=file]::file-selector-button{
   max-width: 100%;
 }
 
-input[type=file]::file-selector-button:hover{
+input[type='file']::file-selector-button:hover {
   background-color: var(--light-blue);
   color: var(--dark);
   transition: all ease-in-out 0.5s;
 }
 
-ul li{
+ul li {
   margin: 0.3em 0;
 }
