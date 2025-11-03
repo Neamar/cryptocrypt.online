@@ -15,7 +15,6 @@
           <form method="POST" action="/crypts/create">
             <input type="submit" value="Create a Crypt for free" class="btn" />
           </form>
-          <a href="#how-does-it-work" class="btn btn-secondary">How does it work?</a>
         </div>
       </div>
       <div class="hero-image">
@@ -49,18 +48,6 @@
             <img src="/images/usecase-inheritance.webp" alt="Crypto inheritance"
                  sizes="(max-width: 479px) 100vw, (max-width: 767px) 91vw, (max-width: 991px) 44vw, 33vw"
                  srcset="/images/usecase-inheritance-p-500.webp 500w, /images/usecase-inheritance-p-800.webp 800w, /images/usecase-inheritance-p-1080.webp 1080w, /images/usecase-inheritance-p-1600.webp 1600w, /images/usecase-inheritance.webp 1680w">
-          </div>
-        </div>
-
-        <div class="usecase-card usecase-right">
-          <div class="usecase-text">
-            <h3 class="h3-card">Crypto seed phrase protection</h3>
-            <p class="p-card">Identify trusted friends and family to help recover your seed phrase and secure your crypto assets.</p>
-          </div>
-          <div class="usecase-img">
-            <img src="/images/usecase-justlost.webp" alt="Seed phrase protection"
-                 sizes="(max-width: 479px) 100vw, (max-width: 767px) 91vw, (max-width: 991px) 44vw, 33vw"
-                 srcset="/images/usecase-justlost-p-500.webp 500w, /images/usecase-justlost-p-800.webp 800w, /images/usecase-justlost-p-1080.webp 1080w, /images/usecase-justlost-p-1600.webp 1600w, /images/usecase-justlost.webp 1680w">
           </div>
         </div>
       </div>
@@ -145,9 +132,9 @@
                 <p class="p-card">If you fail to answer for some time, we automatically send your message to the intended recipient.</p>
               </div>
               <div class="slide-image">
-                <img src="/images/usecase-justlost.webp" alt="Automatic delivery"
+                <img src="/images/usecase-inheritance.webp" alt="Automatic delivery"
                      sizes="(max-width: 479px) 297px, (max-width: 767px) 91vw, (max-width: 991px) 43vw, 25vw"
-                     srcset="/images/usecase-justlost-p-500.webp 500w, /images/usecase-justlost-p-800.webp 800w, /images/usecase-justlost-p-1080.webp 1080w, /images/usecase-justlost-p-1600.webp 1600w, /images/usecase-justlost.webp 1680w">
+                     srcset="/images/usecase-inheritance-p-500.webp 500w, /images/usecase-inheritance-p-800.webp 800w, /images/usecase-inheritance-p-1080.webp 1080w, /images/usecase-inheritance-p-1600.webp 1600w, /images/usecase-inheritance.webp 1680w">
               </div>
             </div>
           </div>
@@ -155,10 +142,10 @@
 
         <!-- Slider Navigation -->
         <button class="slider-arrow slider-arrow-left" aria-label="Previous slide">
-          <img src="/images/arrow_short_1arrow_short.webp" alt="Previous" width="32" height="32">
+          <img src="/images/arrow.webp" alt="Previous" width="32" height="32">
         </button>
         <button class="slider-arrow slider-arrow-right" aria-label="Next slide">
-          <img src="/images/arrow_short_1arrow_short.webp" alt="Next" width="32" height="32" class="arrow-rotate">
+          <img src="/images/arrow.webp" alt="Next" width="32" height="32" class="arrow-rotate">
         </button>
       </div>
     </div>
@@ -363,7 +350,6 @@
   /* Reset and Global Styles */
   body {
     background-color: #27293e;
-    font-family: Inter, sans-serif;
     margin: 0;
     padding: 0;
     color: #fff;
@@ -539,7 +525,7 @@
   .hero-buttons {
     display: flex;
     gap: 1rem;
-    align-items: center;
+    justify-content: flex-end;
   }
 
   .hero-buttons form {
@@ -579,9 +565,8 @@
   }
 
   .usecases-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    display: flex;
+    justify-content: center;
     margin-bottom: 1.5rem;
   }
 
@@ -590,6 +575,8 @@
     border-radius: 1rem;
     overflow: hidden;
     box-shadow: 0 1px 2px rgba(20, 21, 26, 0.05);
+    max-width: 800px;
+    width: 100%;
   }
 
   .usecase-left {
@@ -944,7 +931,7 @@
     }
 
     .usecases-grid {
-      grid-template-columns: 1fr;
+      justify-content: center;
     }
 
     .usecases-wrapper {
@@ -1004,10 +991,6 @@
       padding: 5rem 0;
     }
 
-    .usecases-grid {
-      gap: 1.5rem;
-    }
-
     .slider-wrapper {
       padding: 5rem 0 10rem;
     }
@@ -1051,12 +1034,16 @@
     }
 
     .slider-wrapper,
-    .usecases-wrapper,
     .usecase-header,
     .howto-header,
     .cta-wrapper,
     .faq-grid {
       max-width: 90%;
+      margin: 0 auto;
+    }
+
+    .usecases-wrapper {
+      max-width: 95%;
       margin: 0 auto;
     }
 
