@@ -1,4 +1,7 @@
-{% set title = "What should I do with the list of words I found?" %} {% extends "template.html"%} {% block main %}
+{% set title = "What should I do with the list of words I found?" %}
+{% extends "template.html" %}
+
+{% block main %}
 <p>
   You've received a message, and this message included instructions to find a list of words (sometimes called a passphrase, or a seed).<br />
   Now what?
@@ -22,9 +25,5 @@
   instance, Coinbase or Kraken).<br />
   Beware that trading back to fiat has tax implications for most countries in the world. For significant amount of money, you may want to consult with
   a tax lawyer.
-</p>
-
-<p>
-  If this website was helpful in any way, please <a href="/donate">consider donating a small portion of your new wealth</a> to support this service.
 </p>
 {% endblock %}
