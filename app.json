@@ -4,11 +4,11 @@
   "description": " Securely help your loved ones retrieve your crypto keys when you're gone. Details at https://github.com/Neamar/cryptocrypt.online/blob/main/README.md",
   "cron": [
     {
-      "command": "crypt-healthcheck",
+      "command": "npm run job crypt-healthcheck",
       "schedule": "0 0 1,15,22,25,28 * *"
     },
     {
-      "command": "crypt-release",
+      "command": "npm run job crypt-release",
       "schedule": "0 0 5 * *"
     }
   ],
