@@ -1,7 +1,10 @@
-import bunyan from 'bunyan';
-import bunyanFormat from 'bunyan-format';
+import pino from 'pino';
 import { isTest } from './env.js';
 
-const formatOut = bunyanFormat({ outputMode: 'short' });
-export const jobLogger = bunyan.createLogger({ name: "jobs", level: isTest ? 100 : 0, stream: formatOut });
-export const webLogger = bunyan.createLogger({ name: "web", level: isTest ? 100 : 0, stream: formatOut });
+const transport = pino.transport({
+  target: 'pino-pretty',
+  options: { colorize: true }
+});
+
+export const jobLogger = pino({ name: "jobs", level: isTest ? 'silent' : 'trace' }, transport);
+export const webLogger = pino({ name: "web", level: isTest ? 'silent' : 'trace' }, transport);

@@ -25,8 +25,8 @@
   "dependencies": {
     "@koa/bodyparser": "^6.0.0",
     "@koa/router": "^13.0.0",
-    "bunyan": "^1.8.15",
-    "bunyan-format": "^0.2.1",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
     "busboy": "^1.6.0",
     "email-validator": "^2.0.4",
     "fejl": "^3.0.1",
