@@ -2,7 +2,7 @@ import test, { describe, after } from 'node:test';
 import assert from 'node:assert';
 import { server } from '../index.js';
 import db from '../db.js';
-import { internalFetch, withCrypt } from '../testHelpers.js';
+import { authCookie, internalFetch, withCrypt } from '../testHelpers.js';
 import { cryptLink, getCryptHash, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
 import { lastMail } from '../helpers/mail.js';
 
@@ -91,13 +91,15 @@ describe('GET /crypts/:uuid/verify-from-email', () => {
     assert(r.url.includes('/verify'), 'Invalid code should redirect');
   }));
 
-  test("should succeed with valid code", withCrypt(STATUS_INVALID, { from_mail: 'foo@bar.com' }, async (crypt, upToDateCrypt) => {
+  test("should succeed with valid code and set the auth cookie", withCrypt(STATUS_INVALID, { from_mail: 'foo@bar.com' }, async (crypt, upToDateCrypt) => {
     const hash = getCryptHash(crypt, 'verify-email', 'foo@bar.com', Date.now() + 10000);
-    const r = await internalFetch(`${cryptLink(crypt, 'verify-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`);
+    const r = await internalFetch(`${cryptLink(crypt, 'verify-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`, { redirect: 'manual' });
 
-    assert.strictEqual(r.status, 200);
-    assert((await upToDateCrypt()).status, STATUS_EMPTY);
-    assert(r.url.includes('/edit'), 'Invalid code should redirect');
+    assert.strictEqual(r.status, 302);
+    assert.strictEqual((await upToDateCrypt()).status, STATUS_EMPTY);
+    assert.strictEqual(r.headers.get('location'), cryptLink(crypt, 'edit'));
+    const setCookie = r.headers.get('set-cookie');
+    assert(setCookie && setCookie.includes(`auth-${crypt.uuid}=`), 'Response should set the auth cookie');
   }));
 });
 
@@ -105,7 +107,7 @@ describe('GET /crypts/:uuid/edit', () => {
   has404(`/crypts/ca761232-ed42-11ce-bacd-00aa0057b223/edit`);
 
   test("should return HTTP 200", withCrypt(STATUS_EMPTY, async (crypt) => {
-    const r = await internalFetch(`/crypts/${crypt.uuid}/edit`);
+    const r = await internalFetch(`/crypts/${crypt.uuid}/edit`, { headers: { Cookie: authCookie(crypt) } });
     assert.strictEqual(r.status, 200);
   }));
 });
@@ -114,7 +116,7 @@ describe('GET /crypts/:uuid/', () => {
   has404(`/crypts/ca761232-ed42-11ce-bacd-00aa0057b223`);
 
   test("should return HTTP 200", withCrypt(STATUS_EMPTY, async (crypt) => {
-    const r = await internalFetch(`/crypts/${crypt.uuid}/`);
+    const r = await internalFetch(`/crypts/${crypt.uuid}/`, { headers: { Cookie: authCookie(crypt) } });
     assert.strictEqual(r.status, 200);
   }));
 });
@@ -123,7 +125,7 @@ describe('GET /crypts/:uuid/read', () => {
   has404(`/crypts/ca761232-ed42-11ce-bacd-00aa0057b223/read`);
 
   test("should return HTTP 200", withCrypt(STATUS_READY, async (crypt, upToDateCrypt) => {
-    const r = await internalFetch(`/crypts/${crypt.uuid}/read`);
+    const r = await internalFetch(`/crypts/${crypt.uuid}/read`, { headers: { Cookie: authCookie(crypt) } });
     assert.strictEqual(r.status, 200);
     assert.strictEqual((await upToDateCrypt()).status, crypt.status);
     assert.equal((await upToDateCrypt()).read_at, undefined);
@@ -143,7 +145,7 @@ describe('GET /crypts/:uuid/delete', () => {
   has404(`/crypts/ca761232-ed42-11ce-bacd-00aa0057b223/delete`);
 
   test("should return HTTP 200", withCrypt(STATUS_EMPTY, async (crypt) => {
-    const r = await internalFetch(`/crypts/${crypt.uuid}/delete`);
+    const r = await internalFetch(`/crypts/${crypt.uuid}/delete`, { headers: { Cookie: authCookie(crypt) } });
     assert.strictEqual(r.status, 200);
   }));
 });
@@ -173,7 +175,7 @@ describe('GET /crypts/:uuid/healthcheck', () => {
 
 describe('POST /crypts/:uuid/delete', () => {
   test("should return HTTP 200 and delete", withCrypt(STATUS_READY, async (crypt, upToDateCrypt) => {
-    const r = await internalFetch(`/crypts/${crypt.uuid}/delete`, { method: 'POST' });
+    const r = await internalFetch(`/crypts/${crypt.uuid}/delete`, { method: 'POST', headers: { Cookie: authCookie(crypt) } });
     assert.strictEqual(r.status, 200);
     assert.equal(await upToDateCrypt(), undefined);
   }));
@@ -188,7 +190,8 @@ describe('POST /crypts/:uuid/edit', () => {
       }),
       headers: {
         'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Cookie: authCookie(crypt)
       },
     });
     assert.strictEqual(r.status, 200);
@@ -205,7 +208,8 @@ describe('POST /crypts/:uuid/edit', () => {
       }),
       headers: {
         'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Cookie: authCookie(crypt)
       },
     });
     assert.strictEqual(r.status, 200);
@@ -222,7 +226,8 @@ describe('POST /crypts/:uuid/edit', () => {
       }),
       headers: {
         'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Cookie: authCookie(crypt)
       },
     });
     assert.strictEqual(r.status, 200);
@@ -244,7 +249,8 @@ describe('POST /crypts/:uuid/edit', () => {
       body: JSON.stringify(payload),
       headers: {
         'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Cookie: authCookie(crypt)
       },
     });
     assert.strictEqual(r.status, 200);
@@ -274,22 +280,30 @@ describe("Test happy path", () => {
     assert.strictEqual(r.status, 200);
     assert.strictEqual(lastMail.to, 'foo@bar.com');
 
-    // Click on mail link
+    // Click on mail link (email links are HTML-encoded, so decode &amp; back to &)
     const link = lastMail.html.match(`(/crypts/${crypt.uuid}/.+?)"`);
     assert(link, "No valid link found");
+    const verifyLink = link[1].replace(/&amp;/g, '&');
 
     let updatedCrypt = await upToDateCrypt();
     assert(updatedCrypt.status, STATUS_INVALID);
     assert(updatedCrypt.from_mail, 'foo@bar.com');
 
-    r = await internalFetch(link[1]);
+    // Following the verify link authenticates the browser (sets the auth cookie)
+    r = await internalFetch(verifyLink, { redirect: 'manual' });
 
-    assert.strictEqual(r.status, 200);
+    assert.strictEqual(r.status, 302);
+    assert.strictEqual(r.headers.get('location'), cryptLink(crypt, 'edit'));
     updatedCrypt = await upToDateCrypt();
-    assert(updatedCrypt.status, STATUS_EMPTY);
-    assert(updatedCrypt.from_mail, 'foo@bar.com');
+    assert.strictEqual(updatedCrypt.status, STATUS_EMPTY);
+    assert.strictEqual(updatedCrypt.from_mail, 'foo@bar.com');
 
-    // Edit content
+    const setCookie = r.headers.get('set-cookie');
+    assert(setCookie && setCookie.includes(`auth-${crypt.uuid}=`), 'Verify link should set the auth cookie');
+    // Reuse the issued cookie (browsers scope it to this crypt path) for the next request
+    const cookie = setCookie.split(';')[0];
+
+    // Edit content, proving the auth cookie unlocks the gated route
     r = await internalFetch(`/crypts/${crypt.uuid}/edit`, {
       method: 'POST',
       body: JSON.stringify({
@@ -300,13 +314,14 @@ describe("Test happy path", () => {
       }),
       headers: {
         'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Cookie: cookie
       },
     });
     assert.strictEqual(r.status, 200);
     updatedCrypt = await upToDateCrypt();
-    assert(updatedCrypt.status, STATUS_READY);
-    assert(updatedCrypt.message, 'I love you');
+    assert.strictEqual(updatedCrypt.status, STATUS_READY);
+    assert.strictEqual(updatedCrypt.message, 'I love you');
   }));
 
 });
@@ -317,7 +332,7 @@ describe('GET /crypts/:uuid/file', () => {
 
   test('should return 404 if crypt has no file', withCrypt(STATUS_READY, async (crypt) => {
     // withCrypt creates a crypt without an encrypted_message file
-    const r = await internalFetch(`/crypts/${crypt.uuid}/file`);
+    const r = await internalFetch(`/crypts/${crypt.uuid}/file`, { headers: { Cookie: authCookie(crypt) } });
     assert.strictEqual(r.status, 404);
   }));
 
@@ -332,7 +347,7 @@ describe('GET /crypts/:uuid/file', () => {
       encrypted_message_name: testFileName,
     });
 
-    const r = await internalFetch(`/crypts/${crypt.uuid}/file`);
+    const r = await internalFetch(`/crypts/${crypt.uuid}/file`, { headers: { Cookie: authCookie(crypt) } });
     assert.strictEqual(r.status, 200);
 
     // Check response content type
@@ -349,7 +364,7 @@ describe('GET /crypts/:uuid/file', () => {
       encrypted_message_name: testFileName,
     });
 
-    const r = await internalFetch(`/crypts/${crypt.uuid}/file`);
+    const r = await internalFetch(`/crypts/${crypt.uuid}/file`, { headers: { Cookie: authCookie(crypt) } });
     const contentDisposition = r.headers.get('content-disposition');
 
     assert(contentDisposition, 'content-disposition header should be set');
@@ -366,7 +381,7 @@ describe('GET /crypts/:uuid/file', () => {
       encrypted_message_name: 'binary-file.bin',
     });
 
-    const r = await internalFetch(`/crypts/${crypt.uuid}/file`);
+    const r = await internalFetch(`/crypts/${crypt.uuid}/file`, { headers: { Cookie: authCookie(crypt) } });
     const responseBuffer = await r.arrayBuffer();
 
     assert.deepStrictEqual(Buffer.from(responseBuffer), binaryData, 'Response should contain correct binary content');
@@ -380,13 +395,190 @@ describe('GET /crypts/:uuid/file', () => {
       encrypted_message_name: specialFileName,
     });
 
-    const r = await internalFetch(`/crypts/${crypt.uuid}/file`);
+    const r = await internalFetch(`/crypts/${crypt.uuid}/file`, { headers: { Cookie: authCookie(crypt) } });
     const contentDisposition = r.headers.get('content-disposition');
 
     assert(contentDisposition.includes(`filename="${specialFileName}"`), 'Should preserve special characters in filename');
   }));
 });
 
+
+
+describe('Owner authentication', () => {
+  describe('Dashboard challenge', () => {
+    test('should send a magic link and return 401 for an unauthenticated ready crypt', withCrypt(STATUS_READY, { from_mail: 'foo@bar.com' }, async (crypt, upToDateCrypt) => {
+      const r = await internalFetch(`/crypts/${crypt.uuid}`);
+      assert.strictEqual(r.status, 401);
+
+      const body = await r.text();
+      // The full link must never be shown to an unauthenticated visitor, only the masked email.
+      assert(body.includes('f***@bar.com'), 'Page should show the masked email');
+      assert(!body.includes('/auth-from-email'), 'Page must not leak the sign-in link');
+
+      // The email carries the actual sign-in link.
+      assert.strictEqual(lastMail.to, 'foo@bar.com');
+      assert(lastMail.html.includes(`/crypts/${crypt.uuid}/auth-from-email`), 'Mail should contain the sign-in link');
+      assert(lastMail.html.includes('hash='), 'Mail link should contain a hash');
+      assert(lastMail.html.includes('validUntil='), 'Mail link should contain validUntil');
+
+      assert.ok((await upToDateCrypt()).auth_mail_sent_at, 'auth_mail_sent_at should be set');
+
+      const events = await db('crypt_events').where('crypt_uuid', crypt.uuid).where('event', 'Authentication email sent');
+      assert.strictEqual(events.length, 1, 'An "Authentication email sent" event should be logged');
+    }));
+
+    test('should challenge empty crypts too', withCrypt(STATUS_EMPTY, { from_mail: 'foo@bar.com' }, async (crypt) => {
+      const r = await internalFetch(`/crypts/${crypt.uuid}`);
+      assert.strictEqual(r.status, 401);
+    }));
+
+    test('should NOT send a second mail within the cooldown window', withCrypt(STATUS_READY, { from_mail: 'foo@bar.com', auth_mail_sent_at: new Date() }, async (crypt, upToDateCrypt) => {
+      const previousMail = lastMail;
+      const previousSentAt = (await upToDateCrypt()).auth_mail_sent_at;
+
+      const r = await internalFetch(`/crypts/${crypt.uuid}`);
+      assert.strictEqual(r.status, 401);
+      assert.strictEqual(lastMail, previousMail, 'No new mail should have been sent during cooldown');
+      assert.strictEqual((await upToDateCrypt()).auth_mail_sent_at.toISOString(), previousSentAt.toISOString(), 'auth_mail_sent_at should be unchanged');
+    }));
+
+    test('should resend a mail after the cooldown expired', withCrypt(STATUS_READY, { from_mail: 'foo@bar.com', auth_mail_sent_at: new Date(Date.now() - 16 * 60 * 1000) }, async (crypt) => {
+      const r = await internalFetch(`/crypts/${crypt.uuid}`);
+      assert.strictEqual(r.status, 401);
+      assert.strictEqual(lastMail.to, 'foo@bar.com');
+      assert(lastMail.html.includes(`/crypts/${crypt.uuid}/auth-from-email`), 'A fresh sign-in link should be emailed');
+    }));
+
+    test('should reject a garbage cookie', withCrypt(STATUS_READY, { from_mail: 'foo@bar.com' }, async (crypt) => {
+      const r = await internalFetch(`/crypts/${crypt.uuid}`, { headers: { Cookie: `auth-${crypt.uuid}=not-a-valid-cookie` } });
+      assert.strictEqual(r.status, 401);
+    }));
+
+    test('should reject an expired forged cookie', withCrypt(STATUS_READY, { from_mail: 'foo@bar.com' }, async (crypt) => {
+      const { hash, validUntil } = getCryptHash(crypt, 'auth', crypt.from_mail, Date.now() - 1000);
+      const r = await internalFetch(`/crypts/${crypt.uuid}`, { headers: { Cookie: `auth-${crypt.uuid}=${hash}.${validUntil}` } });
+      assert.strictEqual(r.status, 401);
+    }));
+
+    test('should reject a cookie forged for another uuid', withCrypt(STATUS_READY, { from_mail: 'foo@bar.com' }, async (crypt) => {
+      const otherCrypt = { uuid: 'ca761232-ed42-11ce-bacd-00aa0057b223', from_mail: crypt.from_mail };
+      const { hash, validUntil } = getCryptHash(otherCrypt, 'auth', otherCrypt.from_mail, Date.now() + 10000);
+      const r = await internalFetch(`/crypts/${crypt.uuid}`, { headers: { Cookie: `auth-${crypt.uuid}=${hash}.${validUntil}` } });
+      assert.strictEqual(r.status, 401);
+    }));
+
+    test('should NOT challenge a sent crypt', withCrypt(STATUS_SENT, { from_mail: 'foo@bar.com' }, async (crypt) => {
+      const previousMail = lastMail;
+      const r = await internalFetch(`/crypts/${crypt.uuid}`);
+      assert.strictEqual(r.status, 200);
+      assert.strictEqual(lastMail, previousMail, 'No mail should be sent for a published crypt');
+    }));
+
+    test('should NOT challenge a read crypt', withCrypt(STATUS_READ, { from_mail: 'foo@bar.com' }, async (crypt) => {
+      const r = await internalFetch(`/crypts/${crypt.uuid}`);
+      assert.strictEqual(r.status, 200);
+    }));
+
+    test('should NOT challenge an invalid crypt', withCrypt(STATUS_INVALID, { from_mail: 'foo@bar.com' }, async (crypt) => {
+      const previousMail = lastMail;
+      const r = await internalFetch(`/crypts/${crypt.uuid}`);
+      assert.strictEqual(r.status, 200);
+      assert.strictEqual(lastMail, previousMail, 'No mail should be sent for an invalid crypt');
+    }));
+  });
+
+  describe('Gated routes without a cookie', () => {
+    test('GET /edit redirects to dashboard', withCrypt(STATUS_EMPTY, async (crypt) => {
+      const r = await internalFetch(`/crypts/${crypt.uuid}/edit`, { redirect: 'manual' });
+      assert.strictEqual(r.status, 302);
+      assert.strictEqual(r.headers.get('location'), cryptLink(crypt, ''));
+    }));
+
+    test('POST /edit redirects and leaves the crypt unchanged', withCrypt(STATUS_EMPTY, async (crypt, upToDateCrypt) => {
+      const r = await internalFetch(`/crypts/${crypt.uuid}/edit`, {
+        method: 'POST',
+        redirect: 'manual',
+        body: JSON.stringify({ from_name: 'Hacker' }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      assert.strictEqual(r.status, 302);
+      assert.strictEqual(r.headers.get('location'), cryptLink(crypt, ''));
+      assert.strictEqual((await upToDateCrypt()).from_name, crypt.from_name);
+    }));
+
+    test('POST /delete redirects and keeps the crypt alive', withCrypt(STATUS_READY, async (crypt, upToDateCrypt) => {
+      const r = await internalFetch(`/crypts/${crypt.uuid}/delete`, { method: 'POST', redirect: 'manual' });
+      assert.strictEqual(r.status, 302);
+      assert.strictEqual(r.headers.get('location'), cryptLink(crypt, ''));
+      assert.ok(await upToDateCrypt(), 'Crypt should still exist');
+    }));
+
+    test('GET /read on a ready crypt redirects', withCrypt(STATUS_READY, async (crypt) => {
+      const r = await internalFetch(`/crypts/${crypt.uuid}/read`, { redirect: 'manual' });
+      assert.strictEqual(r.status, 302);
+      assert.strictEqual(r.headers.get('location'), cryptLink(crypt, ''));
+    }));
+
+    test('GET /file on a sent crypt stays accessible without a cookie', withCrypt(STATUS_SENT, async (crypt) => {
+      await db('crypts').where('uuid', crypt.uuid).update({
+        encrypted_message: Buffer.from('published content'),
+        encrypted_message_name: 'published.txt',
+      });
+      const r = await internalFetch(`/crypts/${crypt.uuid}/file`);
+      assert.strictEqual(r.status, 200);
+      const body = Buffer.from(await r.arrayBuffer()).toString();
+      assert.strictEqual(body, 'published content');
+    }));
+  });
+
+  describe('GET /crypts/:uuid/auth-from-email', () => {
+    has404('/crypts/ca761232-ed42-11ce-bacd-00aa0057b223/auth-from-email');
+
+    test('valid hash sets the auth cookie and unlocks /edit', withCrypt(STATUS_READY, { from_mail: 'foo@bar.com' }, async (crypt) => {
+      const hash = getCryptHash(crypt, 'auth-email', 'foo@bar.com', Date.now() + 10000);
+      const r = await internalFetch(`${cryptLink(crypt, 'auth-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`, { redirect: 'manual' });
+
+      assert.strictEqual(r.status, 302);
+      assert.strictEqual(r.headers.get('location'), cryptLink(crypt, ''));
+      const setCookie = r.headers.get('set-cookie');
+      assert(setCookie && setCookie.includes(`auth-${crypt.uuid}=`), 'Should set the auth cookie');
+
+      const events = await db('crypt_events').where('crypt_uuid', crypt.uuid).where('event', 'Crypt owner authenticated');
+      assert.strictEqual(events.length, 1, 'A "Crypt owner authenticated" event should be logged');
+
+      // The issued cookie should unlock the gated route
+      const cookie = setCookie.split(';')[0];
+      const edit = await internalFetch(`/crypts/${crypt.uuid}/edit`, { headers: { Cookie: cookie } });
+      assert.strictEqual(edit.status, 200);
+    }));
+
+    test('missing hash redirects without a cookie', withCrypt(STATUS_READY, { from_mail: 'foo@bar.com' }, async (crypt) => {
+      const r = await internalFetch(cryptLink(crypt, 'auth-from-email'), { redirect: 'manual' });
+      assert.strictEqual(r.status, 302);
+      assert(!(r.headers.get('set-cookie') || '').includes(`auth-${crypt.uuid}=`), 'No auth cookie should be set');
+    }));
+
+    test('wrong hash redirects without a cookie', withCrypt(STATUS_READY, { from_mail: 'foo@bar.com' }, async (crypt) => {
+      const r = await internalFetch(`${cryptLink(crypt, 'auth-from-email')}?hash=abc&validUntil=${Date.now() + 10000}`, { redirect: 'manual' });
+      assert.strictEqual(r.status, 302);
+      assert(!(r.headers.get('set-cookie') || '').includes(`auth-${crypt.uuid}=`), 'No auth cookie should be set');
+    }));
+
+    test('expired hash redirects without a cookie', withCrypt(STATUS_READY, { from_mail: 'foo@bar.com' }, async (crypt) => {
+      const hash = getCryptHash(crypt, 'auth-email', 'foo@bar.com', Date.now() - 1000);
+      const r = await internalFetch(`${cryptLink(crypt, 'auth-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`, { redirect: 'manual' });
+      assert.strictEqual(r.status, 302);
+      assert(!(r.headers.get('set-cookie') || '').includes(`auth-${crypt.uuid}=`), 'No auth cookie should be set');
+    }));
+
+    test('sent crypt is redirected by the status guard', withCrypt(STATUS_SENT, { from_mail: 'foo@bar.com' }, async (crypt) => {
+      const hash = getCryptHash(crypt, 'auth-email', 'foo@bar.com', Date.now() + 10000);
+      const r = await internalFetch(`${cryptLink(crypt, 'auth-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`, { redirect: 'manual' });
+      assert.strictEqual(r.status, 302);
+      assert(!(r.headers.get('set-cookie') || '').includes(`auth-${crypt.uuid}=`), 'No auth cookie should be set');
+    }));
+  });
+});
 
 
 after(() => db.destroy());

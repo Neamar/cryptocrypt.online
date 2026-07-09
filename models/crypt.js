@@ -13,6 +13,11 @@ export const STATUS_SENT = 'sent';
 // This crypt was read by the intended recipient
 export const STATUS_READ = 'read';
 
+// How long an authentication cookie stays valid (one week)
+export const AUTH_COOKIE_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+// Minimum delay between two authentication emails for a given crypt (anti email-bombing)
+export const AUTH_MAIL_COOLDOWN_MS = 15 * 60 * 1000;
+
 export const logCryptEvent = async (cryptUuid, event, ctx, trx = db) => {
   await trx('crypt_events').insert({
     crypt_uuid: cryptUuid,
@@ -29,7 +34,7 @@ export const logCryptEvent = async (cryptUuid, event, ctx, trx = db) => {
  *
  * @param {Object} crypt
  * @param {String} crypt.uuid uuid of this crypt
- * @param {"warnings"|"verify"|"verify-from-email"|"healthcheck"|"edit"|""|"read"} action
+ * @param {"warnings"|"verify"|"verify-from-email"|"auth-from-email"|"healthcheck"|"edit"|""|"read"} action
  * @returns
  */
 export const cryptLink = (crypt, action) => `/crypts/${crypt.uuid}/${action}`;
@@ -56,12 +61,55 @@ export const getCryptHash = (crypt, action, payload, validUntil = Date.now() + 6
  * Generate a unique hash for a given action
  * @param {Object} crypt
  * @param {String} crypt.uuid uuid of this crypt
- * @param {"verify-email"} action the action to hash against
+ * @param {"verify-email"|"auth-email"|"auth"} action the action to hash against
  * @param {String} hash the hash sent by the user
  * @param {Number} validUntil timestamp of validity
  */
 export const validateCryptHash = (crypt, action, payload, hash, validUntil) => {
   validUntil = Number(validUntil);
+  if (!(validUntil > Date.now()) || typeof hash !== 'string') {
+    return false;
+  }
   const validHash = getCryptHash(crypt, action, payload, validUntil);
-  return validUntil > Date.now() && hash === validHash.hash;
+  // Constant-time comparison to avoid leaking the expected hash through timing.
+  // Both are sha256 hex digests, so lengths always match, but guard defensively.
+  if (hash.length !== validHash.hash.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(validHash.hash));
+};
+
+/**
+ * Build the week-long authentication cookie for a crypt owner.
+ * The uuid and expiry are baked into the hash input, so a cookie copied from
+ * another crypt or with a tampered expiry will fail validation.
+ * @param {Object} crypt
+ * @param {String} crypt.uuid uuid of this crypt
+ * @param {String} crypt.from_mail verified owner email
+ * @returns {{ name: String, value: String, validUntil: Number }}
+ */
+export const getAuthCookie = (crypt) => {
+  const { hash, validUntil } = getCryptHash(crypt, 'auth', crypt.from_mail, Date.now() + AUTH_COOKIE_DURATION_MS);
+  return {
+    name: `auth-${crypt.uuid}`,
+    value: `${hash}.${validUntil}`,
+    validUntil
+  };
+};
+
+/**
+ * Validate an authentication cookie value (`<hash>.<validUntil>`) against a crypt.
+ * @param {Object} crypt
+ * @param {String} crypt.uuid uuid of this crypt
+ * @param {String} crypt.from_mail verified owner email
+ * @param {String} cookieValue the raw cookie value
+ * @returns {Boolean}
+ */
+export const isValidAuthCookie = (crypt, cookieValue) => {
+  if (!cookieValue || typeof cookieValue !== 'string') {
+    return false;
+  }
+  // sha256 hex digests contain no '.', so the split is unambiguous.
+  const [hash, validUntil] = cookieValue.split('.');
+  return validateCryptHash(crypt, 'auth', crypt.from_mail, hash, validUntil);
 };

@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import db from '../db.js';
 import { sendEmail, templateEmail } from '../helpers/mail.js';
-import { getCrypt, requireCryptStatus } from '../middlewares/crypt.js';
+import { challengeCryptAuth, getCrypt, requireCryptAuth, requireCryptStatus, setCryptAuthCookie } from '../middlewares/crypt.js';
 import { cryptLink, getCryptHash, logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT, validateCryptHash, } from '../models/crypt.js';
 const router = new Router();
 
@@ -106,6 +106,9 @@ router.get('/crypts/:uuid/verify-from-email', getCrypt, requireCryptStatus([STAT
       await logCryptEvent(ctx.crypt.uuid, 'Crypt owner email verified', ctx, trx);
     });
 
+    // Authenticate this device so the owner isn't locked out right after verifying.
+    setCryptAuthCookie(ctx);
+
     ctx.setToast("Email address verified.");
     ctx.redirect(cryptLink(ctx.crypt, 'edit'));
     return;
@@ -118,9 +121,31 @@ router.get('/crypts/:uuid/verify-from-email', getCrypt, requireCryptStatus([STAT
 
 
 /**
+ * Authenticate the crypt owner from a magic link. A GET request that has side effects.
+ */
+router.get('/crypts/:uuid/auth-from-email', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_READY]), async (ctx) => {
+  const hash = ctx.request.query.hash;
+  const validUntil = ctx.request.query.validUntil;
+  const valid = validateCryptHash(ctx.crypt, 'auth-email', ctx.crypt.from_mail, hash, validUntil);
+
+  if (valid) {
+    setCryptAuthCookie(ctx);
+    await logCryptEvent(ctx.crypt.uuid, 'Crypt owner authenticated', ctx);
+
+    ctx.setToast("You're now signed in for one week on this device.");
+    ctx.redirect(cryptLink(ctx.crypt, ''));
+  }
+  else {
+    ctx.setToast("Invalid or expired sign-in link. Please try again.", 'error');
+    ctx.redirect(cryptLink(ctx.crypt, ''));
+  }
+});
+
+
+/**
  * Show form to edit the crypt
  */
-router.get('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_READY]), (ctx) => {
+router.get('/crypts/:uuid/edit', getCrypt, requireCryptAuth, requireCryptStatus([STATUS_EMPTY, STATUS_READY]), (ctx) => {
   ctx.render('crypts/uuid/edit.html', { title: "Edit your crypt" });
 });
 
@@ -128,7 +153,7 @@ router.get('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STA
 /**
  * Save crypt changes
  */
-router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, STATUS_READY]), async (ctx) => {
+router.post('/crypts/:uuid/edit', getCrypt, requireCryptAuth, requireCryptStatus([STATUS_EMPTY, STATUS_READY]), async (ctx) => {
   const fields = ['from_name', 'to_name', 'to_mail', 'message'];
 
   // Trim all fields
@@ -190,7 +215,7 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptStatus([STATUS_EMPTY, ST
 /**
  * Crypt main page
  */
-router.get('/crypts/:uuid', getCrypt, async (ctx) => {
+router.get('/crypts/:uuid', getCrypt, challengeCryptAuth, async (ctx) => {
   const ACTIONS = {};
   ACTIONS[STATUS_INVALID] = ['verify'];
   ACTIONS[STATUS_EMPTY] = ['edit', 'delete'];
@@ -210,7 +235,7 @@ router.get('/crypts/:uuid', getCrypt, async (ctx) => {
 /**
  * Show form to delete the crypt
  */
-router.get('/crypts/:uuid/delete', getCrypt, (ctx) => {
+router.get('/crypts/:uuid/delete', getCrypt, requireCryptAuth, (ctx) => {
   ctx.render('crypts/uuid/delete.html', {
     title: 'Delete crypt?',
   });
@@ -220,7 +245,7 @@ router.get('/crypts/:uuid/delete', getCrypt, (ctx) => {
 /**
  * Crypt delete page
  */
-router.post('/crypts/:uuid/delete', getCrypt, async (ctx) => {
+router.post('/crypts/:uuid/delete', getCrypt, requireCryptAuth, async (ctx) => {
   await db('crypts').where('uuid', ctx.crypt.uuid).delete();
 
   ctx.render('crypts/uuid/deleted.html', {
@@ -232,7 +257,7 @@ router.post('/crypts/:uuid/delete', getCrypt, async (ctx) => {
 /**
  * Show crypt content (and a preview warning if status <> sent)
  */
-router.get('/crypts/:uuid/read', getCrypt, requireCryptStatus([STATUS_READY, STATUS_SENT, STATUS_READ]), async (ctx) => {
+router.get('/crypts/:uuid/read', getCrypt, requireCryptAuth, requireCryptStatus([STATUS_READY, STATUS_SENT, STATUS_READ]), async (ctx) => {
   if (ctx.crypt.status === STATUS_SENT || ctx.crypt.status === STATUS_READ) {
     await logCryptEvent(ctx.crypt.uuid, "Crypt read by recipient", ctx);
     if (ctx.crypt.status === STATUS_SENT) {
@@ -249,7 +274,7 @@ router.get('/crypts/:uuid/read', getCrypt, requireCryptStatus([STATUS_READY, STA
 /**
  * Crypt encrypted message
  */
-router.get('/crypts/:uuid/file', async (ctx) => {
+router.get('/crypts/:uuid/file', getCrypt, requireCryptAuth, async (ctx) => {
   const crypt = await db('crypts').where('uuid', ctx.params.uuid).whereNotNull('encrypted_message').select('encrypted_message', 'encrypted_message_name').first();
   NotFound.assert(crypt, 'No file associated with this crypt.');
 

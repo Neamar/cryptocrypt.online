@@ -1,0 +1,13 @@
+{% extends "template.html"%} {% block main %}
+
+<p class="info">This crypt is locked. To protect its content, we need to verify that you're the owner.</p>
+
+{% if mailJustSent %}
+<p>We've emailed a sign-in link to <strong>{{ maskedEmail }}</strong>. Please click the link in that email to unlock this crypt on this device for one week.</p>
+{% else %}
+<p>A sign-in link was emailed to <strong>{{ maskedEmail }}</strong> recently. Please check your inbox (and spam folder) and click the link to unlock this crypt.</p>
+{% endif %}
+
+<p class="hint">The link is valid for 24 hours. If you didn't request it, you can safely ignore the email.</p>
+
+{% endblock %}
