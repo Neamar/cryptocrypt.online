@@ -1,5 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import db from './db.js';
+import { AUTH_COOKIE_DURATION_MS, getCryptHash } from './models/crypt.js';
+
+/**
+ * Forge a valid owner authentication cookie header for a crypt.
+ * Use as `headers: { Cookie: authCookie(crypt) }`.
+ * @param {{uuid: String, from_mail: String}} crypt a crypt with uuid + from_mail
+ * @returns {String}
+ */
+export const authCookie = (crypt) => {
+  const { hash, validUntil } = getCryptHash(crypt, 'auth', crypt.from_mail, Date.now() + AUTH_COOKIE_DURATION_MS);
+  return `auth-${crypt.uuid}=${hash}.${validUntil}`;
+};
 
 /**
  * Generate a crypt, and makes it available for a test function
