@@ -17,4 +17,5 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           dokku-host: 'cryptocrypt.online'
           app-name: 'cryptocrypt'
+          remote-branch: 'main'
           git-push-flags: '--force'
