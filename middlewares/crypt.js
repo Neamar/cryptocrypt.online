@@ -45,7 +45,9 @@ export const setCryptAuthCookie = (ctx) => {
   ctx.cookies.set(name, value, {
     httpOnly: true,
     sameSite: 'lax',
-    path: cryptLink(ctx.crypt, ''),
+    // No trailing slash: browsers won't send a "/crypts/<uuid>/"-scoped cookie to
+    // "/crypts/<uuid>" (RFC 6265 path-match), and both forms serve the dashboard.
+    path: `/crypts/${ctx.crypt.uuid}`,
     expires: new Date(validUntil),
     ...(isProd && { secure: true }),
   });
@@ -95,29 +97,35 @@ export const challengeCryptAuth = async (ctx, next) => {
   const lastSent = ctx.crypt.auth_mail_sent_at ? new Date(ctx.crypt.auth_mail_sent_at).getTime() : 0;
   const canSend = now - lastSent > AUTH_MAIL_COOLDOWN_MS;
 
+  let mailJustSent = false;
   if (canSend) {
     const hash = getCryptHash(ctx.crypt, 'auth-email', ctx.crypt.from_mail, now + 1000 * 60 * 60 * 24);
     const link = `${process.env.SELF_URL}${cryptLink(ctx.crypt, 'auth-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`;
     const template = templateEmail('auth-email.html', { link });
     const hostname = new URL(process.env.SELF_URL).hostname;
 
-    await sendEmail({
+    mailJustSent = await sendEmail({
       from: `Cryptocrypt <contact@${hostname}>`,
       to: ctx.crypt.from_mail,
       subject: template.subject,
       html: template.html
     });
 
-    await db.transaction(async (trx) => {
-      await db('crypts').update({ auth_mail_sent_at: new Date() }).where('uuid', ctx.crypt.uuid);
-      await logCryptEvent(ctx.crypt.uuid, 'Authentication email sent', ctx, trx);
-    });
+    // Only start the cooldown if the mail actually went out, so a transient
+    // SMTP failure doesn't lock the owner out for 15 minutes with no email.
+    if (mailJustSent) {
+      await db.transaction(async (trx) => {
+        await db('crypts').update({ auth_mail_sent_at: new Date() }).where('uuid', ctx.crypt.uuid).transacting(trx);
+        await logCryptEvent(ctx.crypt.uuid, 'Authentication email sent', ctx, trx);
+      });
+    }
   }
 
   ctx.render('crypts/uuid/authenticate.html', {
     title: 'Verify your identity',
     maskedEmail: maskEmail(ctx.crypt.from_mail),
-    mailJustSent: canSend,
+    mailJustSent,
+    mailFailed: canSend && !mailJustSent,
   });
   // Assign status *after* render, since setting ctx.body resets ctx.status to 200.
   ctx.status = 401;

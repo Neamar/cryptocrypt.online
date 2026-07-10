@@ -72,11 +72,13 @@ export const validateCryptHash = (crypt, action, payload, hash, validUntil) => {
   }
   const validHash = getCryptHash(crypt, action, payload, validUntil);
   // Constant-time comparison to avoid leaking the expected hash through timing.
-  // Both are sha256 hex digests, so lengths always match, but guard defensively.
-  if (hash.length !== validHash.hash.length) {
+  // Compare byte lengths (not string lengths: multibyte input differs), as timingSafeEqual throws on mismatched buffer lengths.
+  const hashBuffer = Buffer.from(hash);
+  const validHashBuffer = Buffer.from(validHash.hash);
+  if (hashBuffer.length !== validHashBuffer.length) {
     return false;
   }
-  return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(validHash.hash));
+  return crypto.timingSafeEqual(hashBuffer, validHashBuffer);
 };
 
 /**

@@ -542,6 +542,8 @@ describe('Owner authentication', () => {
       assert.strictEqual(r.headers.get('location'), cryptLink(crypt, ''));
       const setCookie = r.headers.get('set-cookie');
       assert(setCookie && setCookie.includes(`auth-${crypt.uuid}=`), 'Should set the auth cookie');
+      // No trailing slash: browsers would not send a "/crypts/<uuid>/"-scoped cookie to "/crypts/<uuid>"
+      assert(setCookie.includes(`path=/crypts/${crypt.uuid};`), 'Cookie path should be scoped to the crypt, without a trailing slash');
 
       const events = await db('crypt_events').where('crypt_uuid', crypt.uuid).where('event', 'Crypt owner authenticated');
       assert.strictEqual(events.length, 1, 'A "Crypt owner authenticated" event should be logged');
