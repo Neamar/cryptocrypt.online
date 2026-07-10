@@ -1,4 +1,10 @@
-import { STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
+// Status constants inlined from models/crypt.js: migrations are frozen history and
+// must stay self-contained (and loadable by the knex CLI without touching .ts files).
+const STATUS_INVALID = 'invalid';
+const STATUS_EMPTY = 'empty';
+const STATUS_READY = 'ready';
+const STATUS_SENT = 'sent';
+const STATUS_READ = 'read';
 
 /**
  * @param { import("knex").Knex } knex

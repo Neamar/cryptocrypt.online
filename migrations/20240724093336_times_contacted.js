@@ -1,5 +1,3 @@
-import { STATUS_EMPTY, STATUS_INVALID, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
-
 /**
  * @param { import("knex").Knex } knex
  */
