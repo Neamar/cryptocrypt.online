@@ -3,14 +3,21 @@ import { NotFound } from 'fejl';
 import { isProd } from '../helpers/env.ts';
 import { sendEmail, templateEmail } from '../helpers/mail.ts';
 import { AUTH_MAIL_COOLDOWN_MS, cryptLink, getAuthCookie, getCryptHash, isValidAuthCookie, logCryptEvent, STATUS_EMPTY, STATUS_READY } from '../models/crypt.ts';
+import type { Crypt, CryptStatus } from '../models/crypt.ts';
+import type { Context, Middleware } from 'koa';
 
 // Statuses where owner authentication is enforced. Other statuses either have no
 // verified email yet (invalid) or are already published to the recipient (sent/read).
-const AUTHENTICATED_STATUSES = [STATUS_EMPTY, STATUS_READY];
+const AUTHENTICATED_STATUSES: CryptStatus[] = [STATUS_EMPTY, STATUS_READY];
 
-export const getCrypt = async (ctx, next) => {
+// The crypt as exposed on ctx.crypt: everything except the (potentially large) encrypted
+// message itself and times_contacted, plus the human-readable size of the encrypted message.
+export type CryptView = Omit<Crypt, 'encrypted_message' | 'times_contacted'> & { encrypted_message_length: string | null };
+
+export const getCrypt: Middleware = async (ctx, next) => {
   // Retrieve the crypt, except encrypted message.
-  const crypt = await db('crypts').where('uuid', ctx.params.uuid).select('uuid', 'from_name', 'from_mail', 'to_name', 'to_mail', 'message', 'encrypted_message_name', 'status', 'created_at', 'updated_at', 'refreshed_at', 'triggered_at', 'read_at', 'auth_mail_sent_at', db.raw('pg_size_pretty(LENGTH(encrypted_message)::bigint) as encrypted_message_length')).first();
+  // Cast: knex can't type the raw `pg_size_pretty(...)` alias in the select list.
+  const crypt = (await db('crypts').where('uuid', ctx.params.uuid).select('uuid', 'from_name', 'from_mail', 'to_name', 'to_mail', 'message', 'encrypted_message_name', 'status', 'created_at', 'updated_at', 'refreshed_at', 'triggered_at', 'read_at', 'auth_mail_sent_at', db.raw('pg_size_pretty(LENGTH(encrypted_message)::bigint) as encrypted_message_length')).first()) as CryptView | undefined;
 
   NotFound.assert(crypt, 'This crypt does not exist');
 
@@ -20,11 +27,9 @@ export const getCrypt = async (ctx, next) => {
 };
 
 /**
- *
- * @param {("empty"|"invalid"|"ready"|"sent"|"read")[]} statuses
- * @returns Function
+ * Redirect to the crypt main page unless the crypt is in one of the given statuses.
  */
-export const requireCryptStatus = (statuses) => {
+export const requireCryptStatus = (statuses: CryptStatus[]): Middleware => {
   return async (ctx, next) => {
     if (!statuses.includes(ctx.crypt.status)) {
       ctx.setToast('This action is not available for this crypt, redirecting to crypt main page.');
@@ -40,7 +45,7 @@ export const requireCryptStatus = (statuses) => {
  * Set the week-long authentication cookie for the current crypt owner.
  * The cookie is scoped to this crypt's path so it never leaks to other crypts.
  */
-export const setCryptAuthCookie = (ctx) => {
+export const setCryptAuthCookie = (ctx: Context) => {
   const { name, value, validUntil } = getAuthCookie(ctx.crypt);
   ctx.cookies.set(name, value, {
     httpOnly: true,
@@ -53,7 +58,7 @@ export const setCryptAuthCookie = (ctx) => {
   });
 };
 
-const hasValidAuthCookie = (ctx) => {
+const hasValidAuthCookie = (ctx: Context) => {
   const cookieValue = ctx.cookies.get(`auth-${ctx.crypt.uuid}`);
   return isValidAuthCookie(ctx.crypt, cookieValue);
 };
@@ -62,7 +67,7 @@ const hasValidAuthCookie = (ctx) => {
  * Gate an action behind owner authentication.
  * Invalid + published crypts pass through untouched; empty/ready require a valid cookie.
  */
-export const requireCryptAuth = async (ctx, next) => {
+export const requireCryptAuth: Middleware = async (ctx, next) => {
   if (!AUTHENTICATED_STATUSES.includes(ctx.crypt.status) || hasValidAuthCookie(ctx)) {
     return next();
   }
@@ -75,7 +80,7 @@ export const requireCryptAuth = async (ctx, next) => {
  * Mask an email address for display to an unauthenticated visitor.
  * e.g. "foobar@baz.com" => "f***@baz.com"
  */
-const maskEmail = (email) => {
+const maskEmail = (email: string): string => {
   const [local, domain] = (email || '').split('@');
   if (!local || !domain) {
     return '***';
@@ -88,7 +93,7 @@ const maskEmail = (email) => {
  * empty/ready crypt, send a magic link (subject to cooldown) and render the
  * "locked" page with a 401 status.
  */
-export const challengeCryptAuth = async (ctx, next) => {
+export const challengeCryptAuth: Middleware = async (ctx, next) => {
   if (!AUTHENTICATED_STATUSES.includes(ctx.crypt.status) || hasValidAuthCookie(ctx)) {
     return next();
   }
@@ -102,7 +107,8 @@ export const challengeCryptAuth = async (ctx, next) => {
     const hash = getCryptHash(ctx.crypt, 'auth-email', ctx.crypt.from_mail, now + 1000 * 60 * 60 * 24);
     const link = `${process.env.SELF_URL}${cryptLink(ctx.crypt, 'auth-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`;
     const template = templateEmail('auth-email.html', { link });
-    const hostname = new URL(process.env.SELF_URL).hostname;
+    // SELF_URL is a required environment variable, see README
+    const hostname = new URL(process.env.SELF_URL!).hostname;
 
     mailJustSent = await sendEmail({
       from: `Cryptocrypt <contact@${hostname}>`,

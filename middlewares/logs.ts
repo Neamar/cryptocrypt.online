@@ -1,13 +1,14 @@
 import { webLogger } from '../helpers/logger.ts';
 import { isProd } from '../helpers/env.ts';
+import type { Middleware } from 'koa';
 
 /**
- * Request logging middleware using bunyan
+ * Request logging middleware using pino
  * Logs incoming requests and outgoing responses with relevant metadata
  */
-export const addRequestLogs = async (ctx, next) => {
+export const addRequestLogs: Middleware = async (ctx, next) => {
   const start = Date.now();
-  const logData = {
+  const logData: { method: string; path: string; ip?: string; userAgent?: string } = {
     method: ctx.method,
     path: ctx.path,
   };
@@ -47,7 +48,7 @@ export const addRequestLogs = async (ctx, next) => {
     webLogger.error({
       ...logData,
       duration,
-      error: err.message,
+      error: err instanceof Error ? err.message : String(err),
     }, `${ctx.method} ${ctx.path} - Error`);
     throw err;
   }

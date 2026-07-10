@@ -1,7 +1,7 @@
 import cryptHealthcheck from '../crypt-healthcheck.ts';
 import cryptRelease from '../crypt-release.ts';
 
-const jobs = {
+const jobs: Record<string, () => Promise<void>> = {
   "crypt-healthcheck": cryptHealthcheck,
   "crypt-release": cryptRelease,
 };

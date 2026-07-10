@@ -7,6 +7,7 @@ import db from '../db.ts';
 import { sendEmail, templateEmail } from '../helpers/mail.ts';
 import { challengeCryptAuth, getCrypt, requireCryptAuth, requireCryptStatus, setCryptAuthCookie } from '../middlewares/crypt.ts';
 import { cryptLink, getCryptHash, logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT, validateCryptHash, } from '../models/crypt.ts';
+import type { CryptStatus } from '../models/crypt.ts';
 const router = new Router();
 
 
@@ -72,7 +73,8 @@ router.post('/crypts/:uuid/verify', getCrypt, requireCryptStatus([STATUS_INVALID
   const hash = getCryptHash(ctx.crypt, 'verify-email', mail, Date.now() + 1000 * 60 * 60 * 24);
   const link = `${process.env.SELF_URL}${cryptLink(ctx.crypt, 'verify-from-email')}?hash=${hash.hash}&validUntil=${hash.validUntil}`;
   const template = templateEmail("verify-email.html", { link });
-  const hostname = new URL(process.env.SELF_URL).hostname;
+  // SELF_URL is a required environment variable, see README
+  const hostname = new URL(process.env.SELF_URL!).hostname;
 
   const email = {
     from: `Cryptocrypt <contact@${hostname}>`,
@@ -221,11 +223,12 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptAuth, requireCryptStatus
  * Crypt main page
  */
 router.get('/crypts/:uuid', getCrypt, challengeCryptAuth, async (ctx) => {
-  const ACTIONS = {};
-  ACTIONS[STATUS_INVALID] = ['verify'];
-  ACTIONS[STATUS_EMPTY] = ['edit', 'delete'];
-  ACTIONS[STATUS_READY] = ['preview', 'edit', 'delete'];
-  ACTIONS[STATUS_SENT] = ['delete'];
+  const ACTIONS: Partial<Record<CryptStatus, string[]>> = {
+    [STATUS_INVALID]: ['verify'],
+    [STATUS_EMPTY]: ['edit', 'delete'],
+    [STATUS_READY]: ['preview', 'edit', 'delete'],
+    [STATUS_SENT]: ['delete'],
+  };
 
   const events = await db('crypt_events').where('crypt_uuid', ctx.crypt.uuid).orderBy('created_at', 'desc').limit(30).select('event', 'created_at');
 

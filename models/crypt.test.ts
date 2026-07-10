@@ -35,7 +35,7 @@ describe('getCryptHash()', () => {
     const validUntil = Date.now() + 1000000;
 
     const hash1 = getCryptHash(crypt, 'verify-email', payload, validUntil);
-    const hash2 = getCryptHash(crypt, 'other-action', payload, validUntil);
+    const hash2 = getCryptHash(crypt, 'auth-email', payload, validUntil);
 
     assert.notStrictEqual(hash1.hash, hash2.hash, 'Different actions should produce different hashes');
   });
@@ -189,7 +189,6 @@ describe('validateCryptHash()', () => {
     const futureTime = Date.now() + 10000;
 
     const { hash, validUntil } = getCryptHash(crypt, action, payload, futureTime);
-    // @ts-expect-error testing wrong type
     const isValid = validateCryptHash(crypt, action, payload, hash, String(validUntil));
 
     assert.strictEqual(isValid, true, 'Should handle string validUntil and convert to number');
@@ -230,6 +229,7 @@ describe('logCryptEvent()', () => {
       .where('event', 'IP test')
       .first();
 
+    assert(event, 'Event should be inserted into database');
     assert.strictEqual(event.ip, testIP, 'Event should capture correct IP');
   }));
 
@@ -248,6 +248,7 @@ describe('logCryptEvent()', () => {
       .where('event', 'User-agent test')
       .first();
 
+    assert(event, 'Event should be inserted into database');
     assert.strictEqual(event.user_agent, testUserAgent, 'Event should capture correct user-agent');
   }));
 
@@ -264,6 +265,7 @@ describe('logCryptEvent()', () => {
       .where('event', 'Missing user-agent test')
       .first();
 
+    assert(event, 'Event should be inserted into database');
     assert.strictEqual(event.user_agent, 'unknown', 'Missing user-agent should default to "unknown"');
   }));
 
@@ -283,6 +285,7 @@ describe('logCryptEvent()', () => {
       .where('event', 'Timestamp test')
       .first();
 
+    assert(event, 'Event should be inserted into database');
     const eventTime = new Date(event.created_at).getTime();
     assert(eventTime >= beforeCall - 100 && eventTime <= afterCall + 100, 'Event timestamp should be recent');
   }));

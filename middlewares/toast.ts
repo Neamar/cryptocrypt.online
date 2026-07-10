@@ -1,16 +1,17 @@
 import { isProd } from '../helpers/env.ts';
+import type { Middleware } from 'koa';
 
 /**
  * Used as Koa middleware to set the toast directly on the ctx for easy access
  */
-export const readToast = async (ctx, next) => {
+export const readToast: Middleware = async (ctx, next) => {
   const toast = ctx.cookies.get('toast');
   ctx.toast = toast;
   ctx.toastLevel = ctx.cookies.get('toast-lvl') || 'info';
 
   const cookieOptions = {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: 'lax' as const,
     ...(isProd && { secure: true }),
   };
 

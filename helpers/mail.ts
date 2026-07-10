@@ -21,24 +21,28 @@ if (isProd && (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.
 
 const nunjucksMailenv = nunjucks.configure('mails', { autoescape: true, noCache: !isProd, throwOnUndefined: !isProd, });
 
+export interface Mail {
+  to: string;
+  from: string;
+  subject: string;
+  html: string;
+}
+
 // Only for tests, access to lastMail sent
-export let lastMail = null;
+export let lastMail: Mail | null = null;
 
 /**
  * Send an email if NODE_ENV=production, otherwise log it to the console.
- * @param {Object} msg
- * @param {string} msg.to - The recipient email address.
- * @param {string} msg.from - The sender email address.
- * @param {string} msg.subject - The email subject.
- * @param {string} msg.html - The email body (HTML).
+ * @returns true if the email was sent (or fake-sent), false on SMTP failure.
  */
-export const sendEmail = async (msg) => {
+export const sendEmail = async (msg: Mail): Promise<boolean> => {
   if (isTest) {
     lastMail = msg;
     return true;
   }
   if (!isProd) {
-    jobLogger.warn("Fake-sending email", msg);
+    // pino takes the structured data first, then the message
+    jobLogger.warn(msg, "Fake-sending email");
     return true;
   }
 
@@ -52,7 +56,10 @@ export const sendEmail = async (msg) => {
   return true;
 };
 
-export const templateEmail = (template, context) => {
+/**
+ * Render a mail template (first line: subject, then a blank line, then the HTML body).
+ */
+export const templateEmail = (template: string, context: Record<string, unknown>): { subject: string; html: string } => {
   const content = nunjucksMailenv.render(template, context);
   const cutOff = content.indexOf('\n\n');
 

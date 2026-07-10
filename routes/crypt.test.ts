@@ -6,7 +6,7 @@ import { authCookie, internalFetch, withCrypt } from '../testHelpers.ts';
 import { cryptLink, getCryptHash, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT } from '../models/crypt.ts';
 import { lastMail } from '../helpers/mail.ts';
 
-const has404 = (endpoint) => {
+const has404 = (endpoint: string) => {
   test("should return HTTP 404", async () => {
     const r = await internalFetch(endpoint);
     assert.strictEqual(r.status, 404);
@@ -18,6 +18,7 @@ describe('GET /crypts/create', () => {
     const r = await internalFetch('/crypts/create', { method: "POST", redirect: "manual" });
     assert.strictEqual(r.status, 302);
     const location = r.headers.get('location');
+    assert(location, 'A location header should be set');
     assert.match(location, /^\/crypts\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/warnings$/);
   });
 });
@@ -51,8 +52,8 @@ describe('GET /crypts/:uuid/verify', () => {
       },
     });
     assert.strictEqual(r.status, 200);
-    assert.strictEqual(lastMail.to, 'foo@bar.com');
-    const link = lastMail.html.match(`(/crypts/${crypt.uuid}/verify-from-email.+?)"`);
+    assert.strictEqual(lastMail!.to, 'foo@bar.com');
+    const link = lastMail!.html.match(`(/crypts/${crypt.uuid}/verify-from-email.+?)"`);
     assert(link, "No valid link found");
 
     const updatedCrypt = await upToDateCrypt();
@@ -136,7 +137,7 @@ describe('GET /crypts/:uuid/read', () => {
     const r = await internalFetch(`/crypts/${crypt.uuid}/read`);
     assert.strictEqual(r.status, 200);
     assert.strictEqual((await upToDateCrypt()).status, STATUS_READ);
-    assert.ok((await upToDateCrypt()).read_at > startDate);
+    assert.ok((await upToDateCrypt()).read_at! > startDate);
 
   }));
 });
@@ -257,7 +258,7 @@ describe('POST /crypts/:uuid/edit', () => {
     const updatedCrypt = await upToDateCrypt();
     // Everything saved
     Object.entries(payload).forEach(([key, value]) => {
-      assert.equal(updatedCrypt[key], value);
+      assert.equal(updatedCrypt[key as keyof typeof updatedCrypt], value);
     });
     // Status updated
     assert.equal(updatedCrypt.status, STATUS_READY);
@@ -278,10 +279,10 @@ describe("Test happy path", () => {
       },
     });
     assert.strictEqual(r.status, 200);
-    assert.strictEqual(lastMail.to, 'foo@bar.com');
+    assert.strictEqual(lastMail!.to, 'foo@bar.com');
 
     // Click on mail link (email links are HTML-encoded, so decode &amp; back to &)
-    const link = lastMail.html.match(`(/crypts/${crypt.uuid}/.+?)"`);
+    const link = lastMail!.html.match(`(/crypts/${crypt.uuid}/.+?)"`);
     assert(link, "No valid link found");
     const verifyLink = link[1].replace(/&amp;/g, '&');
 
@@ -398,6 +399,7 @@ describe('GET /crypts/:uuid/file', () => {
     const r = await internalFetch(`/crypts/${crypt.uuid}/file`, { headers: { Cookie: authCookie(crypt) } });
     const contentDisposition = r.headers.get('content-disposition');
 
+    assert(contentDisposition, 'content-disposition header should be set');
     assert(contentDisposition.includes(`filename="${specialFileName}"`), 'Should preserve special characters in filename');
   }));
 });
@@ -416,10 +418,10 @@ describe('Owner authentication', () => {
       assert(!body.includes('/auth-from-email'), 'Page must not leak the sign-in link');
 
       // The email carries the actual sign-in link.
-      assert.strictEqual(lastMail.to, 'foo@bar.com');
-      assert(lastMail.html.includes(`/crypts/${crypt.uuid}/auth-from-email`), 'Mail should contain the sign-in link');
-      assert(lastMail.html.includes('hash='), 'Mail link should contain a hash');
-      assert(lastMail.html.includes('validUntil='), 'Mail link should contain validUntil');
+      assert.strictEqual(lastMail!.to, 'foo@bar.com');
+      assert(lastMail!.html.includes(`/crypts/${crypt.uuid}/auth-from-email`), 'Mail should contain the sign-in link');
+      assert(lastMail!.html.includes('hash='), 'Mail link should contain a hash');
+      assert(lastMail!.html.includes('validUntil='), 'Mail link should contain validUntil');
 
       assert.ok((await upToDateCrypt()).auth_mail_sent_at, 'auth_mail_sent_at should be set');
 
@@ -439,14 +441,14 @@ describe('Owner authentication', () => {
       const r = await internalFetch(`/crypts/${crypt.uuid}`);
       assert.strictEqual(r.status, 401);
       assert.strictEqual(lastMail, previousMail, 'No new mail should have been sent during cooldown');
-      assert.strictEqual((await upToDateCrypt()).auth_mail_sent_at.toISOString(), previousSentAt.toISOString(), 'auth_mail_sent_at should be unchanged');
+      assert.strictEqual((await upToDateCrypt()).auth_mail_sent_at!.toISOString(), previousSentAt!.toISOString(), 'auth_mail_sent_at should be unchanged');
     }));
 
     test('should resend a mail after the cooldown expired', withCrypt(STATUS_READY, { from_mail: 'foo@bar.com', auth_mail_sent_at: new Date(Date.now() - 16 * 60 * 1000) }, async (crypt) => {
       const r = await internalFetch(`/crypts/${crypt.uuid}`);
       assert.strictEqual(r.status, 401);
-      assert.strictEqual(lastMail.to, 'foo@bar.com');
-      assert(lastMail.html.includes(`/crypts/${crypt.uuid}/auth-from-email`), 'A fresh sign-in link should be emailed');
+      assert.strictEqual(lastMail!.to, 'foo@bar.com');
+      assert(lastMail!.html.includes(`/crypts/${crypt.uuid}/auth-from-email`), 'A fresh sign-in link should be emailed');
     }));
 
     test('should reject a garbage cookie', withCrypt(STATUS_READY, { from_mail: 'foo@bar.com' }, async (crypt) => {

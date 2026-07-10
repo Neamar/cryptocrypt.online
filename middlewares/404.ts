@@ -1,4 +1,6 @@
-export const handle404 = async (ctx, next) => {
+import type { Middleware } from 'koa';
+
+export const handle404: Middleware = async (ctx, next) => {
   try {
     await next();
     const status = ctx.status || 404;
@@ -6,9 +8,11 @@ export const handle404 = async (ctx, next) => {
       ctx.throw(404, 'Not Found');
     }
   } catch (err) {
-    ctx.status = err.status || err.statusCode || 500;
+    // Koa-thrown HttpErrors carry a status; anything else falls back to 500
+    const httpError = err as { status?: number; statusCode?: number };
+    ctx.status = httpError.status || httpError.statusCode || 500;
     if (ctx.status == 404) {
-      await ctx.render('404.html');
+      ctx.render('404.html');
     }
     else {
       throw err;

@@ -3,12 +3,13 @@ import { randomBytes } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { Middleware } from 'koa';
 
 /**
  * Busboy middleware for parsing multipart/form-data
  * Attaches parsed fields to ctx.request.body and files to ctx.request.files
  */
-export const formidableMiddleware = async (ctx, next) => {
+export const formidableMiddleware: Middleware = async (ctx, next) => {
   // Only parse if content-type is multipart/form-data
   const contentType = ctx.get('content-type');
   if (!contentType || !contentType.includes('multipart/form-data')) {
@@ -21,9 +22,9 @@ export const formidableMiddleware = async (ctx, next) => {
   ctx.request.files = {};
 
   // Parse the multipart form
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     const bb = Busboy({ headers: ctx.headers });
-    const filePromises = [];
+    const filePromises: Promise<void>[] = [];
 
     // Handle form fields
     bb.on('field', (fieldname, val) => {
@@ -35,7 +36,7 @@ export const formidableMiddleware = async (ctx, next) => {
       const filename = info.filename;
       let fileSize = 0;
       const tmpFile = join(tmpdir(), `busboy-${randomBytes(8).toString('hex')}`);
-      const chunks = [];
+      const chunks: Buffer[] = [];
 
       // Collect all chunks
       file.on('data', (chunk) => {
@@ -44,12 +45,12 @@ export const formidableMiddleware = async (ctx, next) => {
       });
 
       // Write file once all chunks are received
-      const filePromise = new Promise((fileResolve, fileReject) => {
+      const filePromise = new Promise<void>((fileResolve, fileReject) => {
         file.on('end', async () => {
           try {
             const buffer = Buffer.concat(chunks);
             await writeFile(tmpFile, buffer);
-            ctx.request.files[fieldname] = {
+            ctx.request.files![fieldname] = {
               name: filename,
               path: tmpFile,
               size: fileSize,

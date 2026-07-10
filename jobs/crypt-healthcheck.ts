@@ -8,7 +8,8 @@ const logger = jobLogger.child({ job: 'healthcheck' });
 
 const pingUrl = process.env.HEALTHCHECK_PING_URL;
 
-const hostname = new URL(process.env.SELF_URL).hostname;
+// SELF_URL is a required environment variable, see README
+const hostname = new URL(process.env.SELF_URL!).hostname;
 
 export default async function main() {
   logger.info("Finding crypts that haven't been active this month");
@@ -22,7 +23,8 @@ export default async function main() {
     .where('refreshed_at', '<', db.raw("DATE_TRUNC('month', current_date)"))
     .where('status', STATUS_READY);
 
-  logger.info("Healthchecking crypts", { crypts: cryptsToNotify.map(c => c.uuid) });
+  // pino takes the structured data first, then the message
+  logger.info({ crypts: cryptsToNotify.map(c => c.uuid) }, "Healthchecking crypts");
 
   await pMap(cryptsToNotify, async (crypt) => {
     const link = `${process.env.SELF_URL}${cryptLink(crypt, 'healthcheck')}`;

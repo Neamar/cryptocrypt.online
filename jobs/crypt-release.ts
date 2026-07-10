@@ -6,7 +6,8 @@ import { cryptLink, STATUS_READY, STATUS_SENT } from '../models/crypt.ts';
 
 const logger = jobLogger.child({ job: 'healthcheck' });
 const pingUrl = process.env.RELEASE_PING_URL;
-const hostname = new URL(process.env.SELF_URL).hostname;
+// SELF_URL is a required environment variable, see README
+const hostname = new URL(process.env.SELF_URL!).hostname;
 
 
 export default async function main() {
@@ -22,7 +23,8 @@ export default async function main() {
     .where('times_contacted', '>=', 6)
     .where('status', STATUS_READY);
 
-  logger.info("Releasing crypts", { crypts: cryptsToNotify.map(c => c.uuid) });
+  // pino takes the structured data first, then the message
+  logger.info({ crypts: cryptsToNotify.map(c => c.uuid) }, "Releasing crypts");
 
   await pMap(cryptsToNotify, async (crypt) => {
     const link = `${process.env.SELF_URL}${cryptLink(crypt, 'read')}`;

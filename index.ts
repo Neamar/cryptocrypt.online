@@ -47,10 +47,9 @@ app
   // serve static files (favicon, manifest, ...)
   .use(koaStatic('static', { maxAge: isProd ? 1000 * 60 * 60 * 24 : 0 }));
 
-const port = process.env.PORT || 3000;
-export const server = app.listen(port, (err) => {
-  if (err) {
-    throw err;
-  }
-  webLogger.info(`Server listening`, { port });
+// Careful: PORT=0 (ephemeral port, used by the test suite) must be preserved, so no `Number(...) || 3000`.
+const port = process.env.PORT !== undefined ? Number(process.env.PORT) : 3000;
+// net.Server's listen callback takes no error argument (an error would be thrown or emitted instead).
+export const server = app.listen(port, () => {
+  webLogger.info({ port }, `Server listening`);
 });
