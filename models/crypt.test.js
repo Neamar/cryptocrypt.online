@@ -168,6 +168,20 @@ describe('validateCryptHash()', () => {
     assert.strictEqual(isValid, false, 'Should reject wrong crypt UUID');
   });
 
+  it('should return false (not throw) for a multibyte hash of matching string length', () => {
+    const crypt = { uuid: randomUUID() };
+    const action = 'verify-email';
+    const payload = 'test@example.com';
+    const futureTime = Date.now() + 10000;
+
+    getCryptHash(crypt, action, payload, futureTime);
+    // 64 chars like a sha256 hex digest, but 65 bytes: timingSafeEqual would throw on mismatched buffer lengths
+    const multibyteHash = `${'a'.repeat(63)}é`;
+    const isValid = validateCryptHash(crypt, action, payload, multibyteHash, futureTime);
+
+    assert.strictEqual(isValid, false, 'Should reject multibyte hash without throwing');
+  });
+
   it('should convert string validUntil to number', () => {
     const crypt = { uuid: randomUUID() };
     const action = 'verify-email';
