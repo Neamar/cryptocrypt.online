@@ -1,8 +1,8 @@
-import db from '../db.js';
+import db from '../db.ts';
 import { NotFound } from 'fejl';
-import { isProd } from '../helpers/env.js';
-import { sendEmail, templateEmail } from '../helpers/mail.js';
-import { AUTH_MAIL_COOLDOWN_MS, cryptLink, getAuthCookie, getCryptHash, isValidAuthCookie, logCryptEvent, STATUS_EMPTY, STATUS_READY } from '../models/crypt.js';
+import { isProd } from '../helpers/env.ts';
+import { sendEmail, templateEmail } from '../helpers/mail.ts';
+import { AUTH_MAIL_COOLDOWN_MS, cryptLink, getAuthCookie, getCryptHash, isValidAuthCookie, logCryptEvent, STATUS_EMPTY, STATUS_READY } from '../models/crypt.ts';
 
 // Statuses where owner authentication is enforced. Other statuses either have no
 // verified email yet (invalid) or are already published to the recipient (sent/read).

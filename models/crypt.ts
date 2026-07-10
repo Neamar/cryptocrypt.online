@@ -1,6 +1,6 @@
-import db from '../db.js';
+import db from '../db.ts';
 import crypto from 'node:crypto';
-import { secret } from '../helpers/env.js';
+import { secret } from '../helpers/env.ts';
 
 // This crypt was just created, and doesn't have a verified owner email
 export const STATUS_INVALID = 'invalid';

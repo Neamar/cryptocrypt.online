@@ -1,10 +1,10 @@
 import test, { describe, after } from 'node:test';
 import assert from 'node:assert';
-import { server } from '../index.js';
-import db from '../db.js';
-import { authCookie, internalFetch, withCrypt } from '../testHelpers.js';
-import { cryptLink, getCryptHash, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
-import { lastMail } from '../helpers/mail.js';
+import { server } from '../index.ts';
+import db from '../db.ts';
+import { authCookie, internalFetch, withCrypt } from '../testHelpers.ts';
+import { cryptLink, getCryptHash, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT } from '../models/crypt.ts';
+import { lastMail } from '../helpers/mail.ts';
 
 const has404 = (endpoint) => {
   test("should return HTTP 404", async () => {

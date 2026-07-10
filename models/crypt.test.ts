@@ -1,9 +1,9 @@
 import assert from 'node:assert';
 import { randomUUID } from 'node:crypto';
 import { after, describe, it } from 'node:test';
-import db from '../db.js';
-import { withCrypt } from '../testHelpers.js';
-import { getCryptHash, logCryptEvent, STATUS_READY, validateCryptHash } from './crypt.js';
+import db from '../db.ts';
+import { withCrypt } from '../testHelpers.ts';
+import { getCryptHash, logCryptEvent, STATUS_READY, validateCryptHash } from './crypt.ts';
 
 describe('getCryptHash()', () => {
   it('should generate a hash', () => {

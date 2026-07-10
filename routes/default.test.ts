@@ -1,9 +1,9 @@
 import assert from 'node:assert';
 import { after, describe, it } from 'node:test';
-import { server } from '../index.js';
-import { internalFetch } from '../testHelpers.js';
+import { server } from '../index.ts';
+import { internalFetch } from '../testHelpers.ts';
 
-describe('GET endpoints in routes/default.js', () => {
+describe('GET endpoints in routes/default.ts', () => {
   it('GET / returns 200', async () => {
     const r = await internalFetch('/');
     assert.strictEqual(r.status, 200);

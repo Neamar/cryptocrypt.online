@@ -1,5 +1,5 @@
-import { webLogger } from '../helpers/logger.js';
-import { isProd } from '../helpers/env.js';
+import { webLogger } from '../helpers/logger.ts';
+import { isProd } from '../helpers/env.ts';
 
 /**
  * Request logging middleware using bunyan

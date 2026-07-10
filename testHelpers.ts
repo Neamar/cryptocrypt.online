@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import db from './db.js';
-import { AUTH_COOKIE_DURATION_MS, getCryptHash } from './models/crypt.js';
+import db from './db.ts';
+import { AUTH_COOKIE_DURATION_MS, getCryptHash } from './models/crypt.ts';
 
 /**
  * Forge a valid owner authentication cookie header for a crypt.
@@ -64,8 +64,7 @@ let serverPort = null;
  */
 export const internalFetch = async (endpoint, options = {}) => {
   if (serverPort === null) {
-    // @ts-expect-error dynamic import
-    const { server } = await import("./index.js");
+    const { server } = await import("./index.ts");
     // Server will be running on epehemeral port (PORT=0 in test_mode)
     const addr = server.address();
     serverPort = addr.port;

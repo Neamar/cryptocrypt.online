@@ -3,10 +3,10 @@ import emailValidator from 'email-validator';
 import { NotFound } from 'fejl';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import db from '../db.js';
-import { sendEmail, templateEmail } from '../helpers/mail.js';
-import { challengeCryptAuth, getCrypt, requireCryptAuth, requireCryptStatus, setCryptAuthCookie } from '../middlewares/crypt.js';
-import { cryptLink, getCryptHash, logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT, validateCryptHash, } from '../models/crypt.js';
+import db from '../db.ts';
+import { sendEmail, templateEmail } from '../helpers/mail.ts';
+import { challengeCryptAuth, getCrypt, requireCryptAuth, requireCryptStatus, setCryptAuthCookie } from '../middlewares/crypt.ts';
+import { cryptLink, getCryptHash, logCryptEvent, STATUS_EMPTY, STATUS_INVALID, STATUS_READ, STATUS_READY, STATUS_SENT, validateCryptHash, } from '../models/crypt.ts';
 const router = new Router();
 
 

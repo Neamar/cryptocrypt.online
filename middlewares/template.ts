@@ -1,6 +1,6 @@
 import nunjucks from "nunjucks";
-import { STATUS_EMPTY, STATUS_INVALID, STATUS_READY, STATUS_SENT } from '../models/crypt.js';
-import { isProd } from '../helpers/env.js';
+import { STATUS_EMPTY, STATUS_INVALID, STATUS_READY, STATUS_SENT } from '../models/crypt.ts';
+import { isProd } from '../helpers/env.ts';
 
 
 const nunjucksWebenv = nunjucks.configure('views', { autoescape: true, noCache: !isProd, throwOnUndefined: !isProd, });

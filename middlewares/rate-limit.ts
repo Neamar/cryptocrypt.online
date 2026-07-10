@@ -1,5 +1,5 @@
 import koaRatelimit from 'koa-ratelimit';
-import { isTest } from '../helpers/env.js';
+import { isTest } from '../helpers/env.ts';
 
 export const rateLimitCrypts = koaRatelimit({
   driver: 'memory',

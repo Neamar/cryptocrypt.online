@@ -1,5 +1,5 @@
-import cryptHealthcheck from '../crypt-healthcheck.js';
-import cryptRelease from '../crypt-release.js';
+import cryptHealthcheck from '../crypt-healthcheck.ts';
+import cryptRelease from '../crypt-release.ts';
 
 const jobs = {
   "crypt-healthcheck": cryptHealthcheck,

@@ -1,4 +1,4 @@
-import { isProd } from '../helpers/env.js';
+import { isProd } from '../helpers/env.ts';
 
 /**
  * Used as Koa middleware to set the toast directly on the ctx for easy access

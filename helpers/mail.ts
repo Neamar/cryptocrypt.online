@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
-import { jobLogger } from './logger.js';
-import { isProd, isTest } from './env.js';
+import { jobLogger } from './logger.ts';
+import { isProd, isTest } from './env.ts';
 import nunjucks from "nunjucks";
 
 

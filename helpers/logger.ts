@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { isTest } from './env.js';
+import { isTest } from './env.ts';
 
 const transport = pino.transport({
   target: 'pino-pretty',
