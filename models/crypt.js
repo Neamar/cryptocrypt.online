@@ -48,8 +48,11 @@ export const cryptLink = (crypt, action) => `/crypts/${crypt.uuid}/${action}`;
  * @param {Number} validUntil how long (in seconds) this token should be valid (one year by default)
  */
 export const getCryptHash = (crypt, action, payload, validUntil = Date.now() + 60 * 60 * 24 * 365 * 1000) => {
-  const toHash = `${secret}:${crypt.uuid}/${action}#${payload}@${validUntil}`;
-  const hash = crypto.createHash('sha256').update(toHash).digest('hex');
+  // JSON.stringify gives an unambiguous, injective encoding of the fields, so a value
+  // containing a delimiter (e.g. an email address holding '@') can't shift field boundaries.
+  const toHash = JSON.stringify([crypt.uuid, action, payload, validUntil]);
+  // HMAC (rather than a raw secret-prefixed SHA-256) is immune to length-extension attacks.
+  const hash = crypto.createHmac('sha256', secret).update(toHash).digest('hex');
 
   return {
     hash,
