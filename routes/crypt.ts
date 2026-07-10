@@ -209,9 +209,9 @@ router.post('/crypts/:uuid/edit', getCrypt, requireCryptAuth, requireCryptStatus
   }
   else {
     const invalid = [];
-    !validEmails && invalid.push("invalid email");
-    !validMessage && invalid.push("missing message");
-    !validNames && invalid.push("missing names");
+    if (!validEmails) invalid.push("invalid email");
+    if (!validMessage) invalid.push("missing message");
+    if (!validNames) invalid.push("missing names");
 
     ctx.setToast(`Your crypt was saved, but some information is still missing: ${invalid.join(', ')}`, 'warn');
     ctx.redirect(cryptLink(ctx.crypt, 'edit'));
@@ -298,7 +298,7 @@ export default router;
 router.get('/crypts/:uuid/healthcheck', getCrypt, requireCryptStatus([STATUS_READY]), async (ctx) => {
   const crypt = ctx.crypt;
   const now = new Date();
-  var firstDayOfTheMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const firstDayOfTheMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   if (crypt.refreshed_at < firstDayOfTheMonth) {
     crypt.refreshed_at = new Date();
     // Refresh last crypt usage, user is still alive!
